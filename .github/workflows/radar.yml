@@ -1,0 +1,27 @@
+name: Radar Trading Bot
+
+on:
+  schedule:
+    - cron: '*/10 * * * *' # Avvia ogni 10 minuti
+  workflow_dispatch: # Questo ci permette di avviarlo anche a mano con un click!
+
+jobs:
+  esegui-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prendi il codice
+        uses: actions/checkout@v4
+
+      - name: Prepara Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Installa pacchetti
+        run: pip install requests
+
+      - name: Esegui il Bot
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: python bot.py
