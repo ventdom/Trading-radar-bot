@@ -2,7 +2,7 @@ name: Radar Trading Bot
 
 on:
   schedule:
-    - cron: '*/10 * * * *' # Avvia ogni 10 minuti
+    - cron: '5 * * * *' # Avvia ogni 10 minuti
   workflow_dispatch: # Questo ci permette di avviarlo anche a mano con un click!
 
 jobs:
