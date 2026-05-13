@@ -6,7 +6,7 @@ TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["CHAT_ID"]
 
 # --- 2. PARAMETRI E TICKERS ---
-TICKERS = {"Oro": "GC=F", "Petrolio": "CL=F", "S&P500": "SPY", "Nasdaq": "QQQ", "Nvidia": "NVDA"}
+TICKERS = {"Oro": "GC=F", "Petrolio": "CL=F","S&P500": "SPY", "Nasdaq": "QQQ",  "Nvidia": "NVDA",  "Tesla": "TSLA", "TSMC": "TSM",  "ASML": "ASML", "AMD": "AMD","Intel": "INTC","Eli Lilly": "LLY","Novo Nordisk": "NVO","AstraZeneca": "AZN","Bristol Myers": "BMY"}
 
 SOGLIA_VOLUME = 2.0     # Volume > 200% della media
 SOGLIA_MOMENTUM = 1.0   # Movimento forte (> 1%)
