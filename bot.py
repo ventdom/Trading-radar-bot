@@ -40,15 +40,15 @@ def analizza_mercati():
             volumi = [v for v in risultato['indicators']['quote'][0]['volume'] if v is not None]
             
             # Ci servono almeno 50 ore per la Media Mobile
-            if len(chiusure) < 50: continue
+            if len(chiusure) < 51: continue
                 
-            prezzo_attuale = chiusure[-1]
-            prezzo_apertura = aperture[-1]
-            volume_attuale = volumi[-1]
+            prezzo_attuale = chiusure[-2]
+            prezzo_apertura = aperture[-2]
+            volume_attuale = volumi[-2]
             
             # Calcoli Statistici
-            media_volume = sum(volumi[-21:-1]) / 20
-            sma_50 = sum(chiusure[-50:]) / 50  # La Marea (Media a 50 ore)
+            media_volume = sum(volumi[-22:-2]) / 20
+            sma_50 = sum(chiusure[-51:-1]) / 50  # La Marea (Media a 50 ore)
             var_perc = ((prezzo_attuale - prezzo_apertura) / prezzo_apertura) * 100
             
             print(f"[{nome}] P: {prezzo_attuale:.2f} | SMA50: {sma_50:.2f} | Vol: {volume_attuale}")
