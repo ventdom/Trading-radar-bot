@@ -61,7 +61,7 @@ def analizza_mercati():
                 dati = response.json()
                 
                 # Controllo sicurezza struttura JSON
-                if non dati.get('chart', {}).get('result'):
+                if not dati.get('chart', {}).get('result'):
                     print(f"[{nome}] Errore struttura JSON: Dati vuoti.")
                     break
                     
