@@ -8,13 +8,18 @@ TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["CHAT_ID"]
 
 # --- 2. PARAMETRI E TICKERS ---
-TICKERS = {
-    "Oro": "GC=F", "Petrolio": "CL=F", "S&P500": "SPY", "Nasdaq": "QQQ",  
-    "Nvidia": "NVDA",  "Tesla": "TSLA", "TSMC": "TSM",  "ASML": "ASML", 
-    "AMD": "AMD", "Intel": "INTC", "Eli Lilly": "LLY", "Novo Nordisk": "NVO",
-    "AstraZeneca": "AZN", "Bristol Myers": "BMY"
-}
 
+TICKERS = {
+    # I Tuoi Tier 1 Originali
+    "Nvidia": "NVDA", "Tesla": "TSLA", "TSMC": "TSM", "ASML": "ASML", "AMD": "AMD", 
+    "Intel": "INTC", "Eli Lilly": "LLY", "Novo Nordisk": "NVO",
+    # I 5 Nuovi Inserimenti ad Alta Volatilità
+    "SuperMicro": "SMCI", 
+    "Palantir": "PLTR", 
+    "CrowdStrike": "CRWD", 
+    "ARM": "ARM", 
+    "Coinbase": "COIN"
+}
 # Le soglie fisse vengono rimosse per far spazio alla logica ATR
 
 def invia_notifica(messaggio, tentativi=3):
