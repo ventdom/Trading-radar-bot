@@ -10,15 +10,30 @@ CHAT_ID = os.environ["CHAT_ID"]
 # --- 2. PARAMETRI E TICKERS ---
 
 TICKERS = {
-    # I Tuoi Tier 1 Originali
-    "Nvidia": "NVDA", "Tesla": "TSLA", "TSMC": "TSM", "ASML": "ASML", "AMD": "AMD", 
-    "Intel": "INTC", "Eli Lilly": "LLY", "Novo Nordisk": "NVO",
-    # I 5 Nuovi Inserimenti ad Alta Volatilità
-    "SuperMicro": "SMCI", 
+    # --- TECH, SEMICONDUTTORI & AI (Inclusi Vertiv e Intel) ---
+    "Nvidia": "NVDA", 
+    "Tesla": "TSLA", 
+    "TSMC": "TSM", 
+    "ASML": "ASML", 
+    "AMD": "AMD", 
+    "Intel": "INTC",        # Reinserito come da richiesta
     "Palantir": "PLTR", 
     "CrowdStrike": "CRWD", 
-    "ARM": "ARM", 
-    "Coinbase": "COIN", "ServiceNow": "NOW", "Vertiv": "VRT"
+    "Vertiv": "VRT",        # Nuova aggiunta infrastruttura AI
+
+    # --- PHARMA ---
+    "Eli Lilly": "LLY", 
+
+    # --- VALORI DIFENSIVI & FINANZA (Basso Rischio) ---
+    "JPMorgan": "JPM", 
+    "Walmart": "WMT", 
+
+    # --- MATERIE PRIME ---
+    "Petrolio (USO ETF)": "USO", # Replica il Crudo senza leva
+
+    # --- SETTORE DIFESA ---
+    "Lockheed Martin": "LMT", 
+    "RTX Corp": "RTX"
 }
 # Le soglie fisse vengono rimosse per far spazio alla logica ATR
 
