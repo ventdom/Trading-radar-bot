@@ -18,7 +18,7 @@ TICKERS = {
     "Palantir": "PLTR", 
     "CrowdStrike": "CRWD", 
     "ARM": "ARM", 
-    "Coinbase": "COIN"
+    "Coinbase": "COIN", "ServiceNow": "NOW", "Vertiv": "VRT"
 }
 # Le soglie fisse vengono rimosse per far spazio alla logica ATR
 
