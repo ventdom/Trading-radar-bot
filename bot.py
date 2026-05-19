@@ -63,6 +63,9 @@ def analizza_mercati():
             trs = [max(massimi[i]-minimi[i], abs(massimi[i]-chiusure[i-1]), abs(minimi[i]-chiusure[i-1])) for i in range(-15, -1)]
             atr_14 = sum(trs) / len(trs)
 
+            # --- RIPRISTINO DELLA STAMPA A SCHERMO (LOGGING TERMINALE) ---
+            print(f"[{nome}] P: {prezzo_attuale:.2f} | SMA50: {sma_50:.2f} | Vol: {volume_attuale} (Media: {media_volume:.0f}) | ATR: {atr_14:.2f}")
+
             if media_volume > 0 and volume_attuale >= (media_volume * 1.5):
                 id_seg = None
                 
