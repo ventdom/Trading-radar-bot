@@ -2,6 +2,7 @@ import os
 import requests
 import time
 import random
+from datetime import datetime
 
 # --- 1. SEGRETI (Presi da GitHub Actions) ---
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
@@ -32,8 +33,13 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
     """Interroga l'API di Gemini per un'analisi contestuale istantanea"""
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
     
+    # --- IL BOT ORA CONOSCE IL CALENDARIO ---
+    giorno = datetime.utcnow().strftime("%A") # Es: Monday, Friday...
+    ora_utc = datetime.utcnow().strftime("%H:%M") # Ora del server GitHub (UTC)
+    
     prompt = (
-        f"Sei un consulente esperto di Swing Trading quantitativo (operatività senza leva). "
+        f"Sei un consulente esperto di Swing Trading quantitativo. "
+        f"Contesto temporale attuale: Oggi è {giorno}, ore {ora_utc} UTC. (Nota: Wall Street apre alle 13:30 UTC e chiude alle 20:00 UTC). "
         f"Analizza questo segnale orario appena chiuso su {ticker}:\n"
         f"- Tipo Evento: {id_seg}\n"
         f"- Prezzo: {prezzo:.2f}$ ({var_perc:+.2f}%)\n"
@@ -41,8 +47,8 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
         f"- Anomalie Volume: {vol_molt:.1f}x la media\n"
         f"- Volatilità: Corpo candela {corpo:.2f}$ (Media ATR {atr:.2f}$)\n\n"
         f"Scrivi un breve e tagliente commento operativo (massimo 3 frasi). "
-        f"Indica se è un'opportunità valida per posizionarsi per 1-2 settimane, se è una probabile trappola, "
-        f"o se è meglio attendere. Usa un tono professionale, da trader."
+        f"Usa il giorno della settimana e l'orario per filtrare le false partenze (es. prese di profitto del venerdì, o alta volatilità di apertura). "
+        f"Indica se è valido per lo swing o se è una trappola. Usa tono professionale."
     )
     
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
@@ -56,7 +62,8 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
         return analisi
     except Exception as e:
         print(f"[ERRORE AI] Impossibile generare analisi per {ticker}: {e}")
-        return "Analisi AI temporaneamente non disponibile a causa di un timeout di rete."
+        return "Analisi AI temporaneamente non disponibile."
+
 
 def analizza_mercati():
     print("Avvio analisi quantitativa con Motore AI Generativo...")
