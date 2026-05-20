@@ -9,13 +9,21 @@ TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["CHAT_ID"]
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"] 
 
-# --- 2. PARAMETRI E TICKERS ---
+# --- 2. PARAMETRI E TICKERS (Bilanciati a 20 Slot) ---
 TICKERS = {
+    # Il tuo blocco originale (13)
     "Nvidia": "NVDA", "Tesla": "TSLA", "TSMC": "TSM", "ASML": "ASML", 
     "AMD": "AMD", "Intel": "INTC", "Eli Lilly": "LLY", "Novo Nordisk": "NVO",
     "SuperMicro": "SMCI", "Palantir": "PLTR", "CrowdStrike": "CRWD", 
-    "ARM": "ARM", "Coinbase": "COIN"
+    "ARM": "ARM", "Coinbase": "COIN",
+    
+    # I 7 Nuovi Slot di Diversificazione
+    "JPMorgan": "JPM", "Visa": "V", 
+    "Walmart": "WMT", "Costco": "COST",
+    "ExxonMobil": "XOM", "Caterpillar": "CAT", 
+    "Lockheed": "LMT"
 }
+
 
 def invia_notifica(messaggio, tentativi=3):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
