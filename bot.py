@@ -39,7 +39,7 @@ def invia_notifica(messaggio, tentativi=3):
 
 def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr, corpo, dist_max, dist_min, giorni_utili):
     """Interroga l'API di Gemini con Orologio, Struttura Grafica e Calendario Utili"""
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
 
 
     # Il Bot ora è consapevole del tempo
