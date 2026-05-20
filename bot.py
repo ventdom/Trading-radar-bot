@@ -7,7 +7,7 @@ from datetime import datetime
 # --- 1. SEGRETI (Presi da GitHub Actions) ---
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["CHAT_ID"]
-GEMINI_API_KEY = os.environ["GEMINI_API_KEY"] # Il nuovo segreto
+GEMINI_API_KEY = os.environ["GEMINI_API_KEY"] 
 
 # --- 2. PARAMETRI E TICKERS ---
 TICKERS = {
@@ -29,26 +29,27 @@ def invia_notifica(messaggio, tentativi=3):
             print(f"[ERRORE TELEGRAM] {e}")
             time.sleep(2)
 
-def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr, corpo):
-    """Interroga l'API di Gemini per un'analisi contestuale istantanea"""
+def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr, corpo, dist_max, dist_min, giorni_utili):
+    """Interroga l'API di Gemini con Orologio, Struttura Grafica e Calendario Utili"""
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
     
-    # --- IL BOT ORA CONOSCE IL CALENDARIO ---
-    giorno = datetime.utcnow().strftime("%A") # Es: Monday, Friday...
-    ora_utc = datetime.utcnow().strftime("%H:%M") # Ora del server GitHub (UTC)
+    # Il Bot ora è consapevole del tempo
+    giorno = datetime.utcnow().strftime("%A")
+    ora_utc = datetime.utcnow().strftime("%H:%M")
     
     prompt = (
-        f"Sei un consulente esperto di Swing Trading quantitativo. "
-        f"Contesto temporale attuale: Oggi è {giorno}, ore {ora_utc} UTC. (Nota: Wall Street apre alle 13:30 UTC e chiude alle 20:00 UTC). "
-        f"Analizza questo segnale orario appena chiuso su {ticker}:\n"
-        f"- Tipo Evento: {id_seg}\n"
-        f"- Prezzo: {prezzo:.2f}$ ({var_perc:+.2f}%)\n"
-        f"- Contesto Trend: {trend_txt}\n"
-        f"- Anomalie Volume: {vol_molt:.1f}x la media\n"
-        f"- Volatilità: Corpo candela {corpo:.2f}$ (Media ATR {atr:.2f}$)\n\n"
+        f"Sei un Risk Manager e consulente di Swing Trading quantitativo (no leva, hold 1-2 settimane). "
+        f"Oggi è {giorno}, ore {ora_utc} UTC. (Wall Street apre alle 13:30 e chiude alle 20:00 UTC). "
+        f"Valuta questo segnale su {ticker}:\n"
+        f"- Segnale: {id_seg} a {prezzo:.2f}$ ({var_perc:+.2f}% oggi)\n"
+        f"- Volume: {vol_molt:.1f}x la media\n"
+        f"- Trend: {trend_txt}\n"
+        f"- Volatilità: Corpo candela {corpo:.2f}$ (Media ATR {atr:.2f}$)\n"
+        f"- Struttura Grafica: Distanza dal Massimo Mensile (Resistenza) {dist_max:.1f}%, dal Minimo (Supporto) {dist_min:.1f}%.\n"
+        f"- Rischio Trimestrale: Mancano {giorni_utili} giorni alla pubblicazione degli utili.\n\n"
         f"Scrivi un breve e tagliente commento operativo (massimo 3 frasi). "
-        f"Usa il giorno della settimana e l'orario per filtrare le false partenze (es. prese di profitto del venerdì, o alta volatilità di apertura). "
-        f"Indica se è valido per lo swing o se è una trappola. Usa tono professionale."
+        f"Valuta il Rischio/Rendimento basandoti sulle resistenze. Usa giorno e ora per filtrare le false partenze o la FOMO. "
+        f"Se mancano meno di 7 giorni agli utili (earnings), blocca categoricamente l'ingresso per rischio crollo."
     )
     
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
@@ -62,11 +63,10 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
         return analisi
     except Exception as e:
         print(f"[ERRORE AI] Impossibile generare analisi per {ticker}: {e}")
-        return "Analisi AI temporaneamente non disponibile."
-
+        return "Analisi AI temporaneamente non disponibile a causa di un timeout di rete."
 
 def analizza_mercati():
-    print("Avvio analisi quantitativa con Motore AI Generativo...")
+    print("Avvio analisi quantitativa con Motore AI Generativo Integrato...")
     session = requests.Session()
     session.headers.update({'User-Agent': 'Mozilla/5.0'})
     
@@ -101,6 +101,12 @@ def analizza_mercati():
             trs = [max(massimi[i]-minimi[i], abs(massimi[i]-chiusure[i-1]), abs(minimi[i]-chiusure[i-1])) for i in range(-15, -1)]
             atr_14 = sum(trs) / len(trs)
 
+            # --- NUOVO: Calcolo Resistenze e Supporti ---
+            massimo_mensile = max(massimi)
+            minimo_mensile = min(minimi)
+            distanza_massimo_perc = ((massimo_mensile - prezzo_attuale) / prezzo_attuale) * 100
+            distanza_minimo_perc = ((prezzo_attuale - minimo_mensile) / prezzo_attuale) * 100
+
             # --- IL BATTITO CARDIACO DEL BOT (LOG SU SCHERMO) ---
             print(f"[{nome}] P: {prezzo_attuale:.2f} | SMA50: {sma_50:.2f} | Vol: {volume_attuale} (Media: {media_volume:.0f}) | ATR: {atr_14:.2f}")
 
@@ -115,6 +121,21 @@ def analizza_mercati():
                     id_seg = "ASSORBIMENTO ISTITUZIONALE"
 
                 if id_seg:
+                    # --- CHIAMATA NINJA PER LE TRIMESTRALI (Scatta solo qui!) ---
+                    url_quote = f"https://query2.finance.yahoo.com/v7/finance/quote?symbols={ticker}"
+                    try:
+                        time.sleep(1) # Pausa tattica per non far arrabbiare Yahoo
+                        resp_quote = session.get(url_quote, timeout=5)
+                        dati_quote = resp_quote.json()
+                        earnings_ts = dati_quote.get("quoteResponse", {}).get("result", [{}])[0].get("earningsTimestamp")
+                        
+                        giorni_agli_utili = "Sconosciuti"
+                        if earnings_ts:
+                            giorni_agli_utili = int((earnings_ts - time.time()) / 86400)
+                    except Exception:
+                        giorni_agli_utili = "Non disponibili"
+                        
+                    # --- Calcoli Finali ---
                     distanza_sl = atr_14 * 2
                     distanza_tp = atr_14 * 4
                     
@@ -139,7 +160,10 @@ def analizza_mercati():
                         vol_molt=molt_vol, 
                         trend_txt=f"{sma_txt} ({trend_txt})", 
                         atr=atr_14, 
-                        corpo=corpo_candela
+                        corpo=corpo_candela,
+                        dist_max=distanza_massimo_perc,
+                        dist_min=distanza_minimo_perc,
+                        giorni_utili=giorni_agli_utili
                     )
 
                     titolo_emo = "🚀" if var_perc > 0 else "🩸"
