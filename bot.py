@@ -11,19 +11,15 @@ GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 
 # --- 2. PARAMETRI E TICKERS (Bilanciati a 20 Slot) ---
 TICKERS = {
-    # Il tuo blocco originale (13)
     "Nvidia": "NVDA", "Tesla": "TSLA", "TSMC": "TSM", "ASML": "ASML", 
     "AMD": "AMD", "Intel": "INTC", "Eli Lilly": "LLY", "Novo Nordisk": "NVO",
     "SuperMicro": "SMCI", "Palantir": "PLTR", "CrowdStrike": "CRWD", 
     "ARM": "ARM", "Coinbase": "COIN",
-    
-    # I 7 Nuovi Slot di Diversificazione
     "JPMorgan": "JPM", "Visa": "V", 
     "Walmart": "WMT", "Costco": "COST",
     "ExxonMobil": "XOM", "Caterpillar": "CAT", 
     "Lockheed": "LMT"
 }
-
 
 def invia_notifica(messaggio, tentativi=3):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
@@ -39,13 +35,14 @@ def invia_notifica(messaggio, tentativi=3):
 
 def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr, corpo, dist_max, dist_min, giorni_utili):
     """Interroga l'API di Gemini con Orologio, Struttura Grafica e Calendario Utili"""
+    # URL Aggiornato alla versione stabile (v1) e al modello 2.5 per annientare l'errore 404
     url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
-
-    # Il Bot ora è consapevole del tempo
+    
+    # Il Bot è consapevole del tempo
     giorno = datetime.utcnow().strftime("%A")
     ora_utc = datetime.utcnow().strftime("%H:%M")
     
-    # PROMPT INTATTO: Esattamente come nell'ultima versione
+    # PROMPT INTATTO AL 100%
     prompt = (
         f"Sei un Risk Manager e consulente di Swing Trading quantitativo (no leva, hold 1-2 settimane). "
         f"Oggi è {giorno}, ore {ora_utc} UTC. (Wall Street apre alle 13:30 e chiude alle 20:00 UTC). "
@@ -99,9 +96,13 @@ def analizza_mercati():
             
             if len(chiusure) < 52: continue
             
+            # Dati della candela di segnale (quella appena chiusa)
             prezzo_attuale = chiusure[-2]
             prezzo_apertura = aperture[-2]
+            massimo_candela = massimi[-2]  # <-- NUOVO: Massimo per Buy Stop
+            minimo_candela = minimi[-2]    # <-- NUOVO: Minimo per Sell Stop
             volume_attuale = volumi[-2]
+            
             media_volume = sum(volumi[-22:-2]) / 20
             sma_50 = sum(chiusure[-51:-1]) / 50  
             var_perc = ((prezzo_attuale - prezzo_apertura) / prezzo_apertura) * 100
@@ -116,14 +117,13 @@ def analizza_mercati():
             distanza_massimo_perc = ((massimo_mensile - prezzo_attuale) / prezzo_attuale) * 100
             distanza_minimo_perc = ((prezzo_attuale - minimo_mensile) / prezzo_attuale) * 100
 
-            # --- IMPLEMENTAZIONE PUNTO 2: Filtro Dinamico di Apertura ---
-            # Le 14 e le 15 UTC coprono la prima candela oraria in chiusura (solare vs legale)
+            # --- Filtro Dinamico di Apertura ---
             ora_utc = datetime.utcnow().hour
             offset_apertura = 1.0 if ora_utc in [14, 15] else 0.0
             
-            soglia_breakout = 1.5 + offset_apertura      # Diventa 2.5 in apertura
-            soglia_spinta = 2.0 + offset_apertura        # Diventa 3.0 in apertura
-            soglia_assorbimento = 2.5 + offset_apertura  # Diventa 3.5 in apertura
+            soglia_breakout = 1.5 + offset_apertura
+            soglia_spinta = 2.0 + offset_apertura
+            soglia_assorbimento = 2.5 + offset_apertura
 
             # --- IL BATTITO CARDIACO DEL BOT (LOG SU SCHERMO INTATTO) ---
             print(f"[{nome}] P: {prezzo_attuale:.2f} | SMA50: {sma_50:.2f} | Vol: {volume_attuale} (Media: {media_volume:.0f}) | ATR: {atr_14:.2f}")
@@ -139,10 +139,10 @@ def analizza_mercati():
                     id_seg = "ASSORBIMENTO ISTITUZIONALE"
 
                 if id_seg:
-                    # --- IMPLEMENTAZIONE PUNTO 1: Filtro Multi-Timeframe (SMA 200 Daily) ---
+                    # --- Filtro Multi-Timeframe (SMA 200 Daily) ---
                     url_daily = f"https://query2.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=1y"
                     try:
-                        time.sleep(1) # Pausa tattica
+                        time.sleep(1)
                         resp_daily = session.get(url_daily, timeout=5)
                         dati_daily = resp_daily.json()
                         chiusure_daily = dati_daily['chart']['result'][0]['indicators']['quote'][0]['close']
@@ -151,17 +151,16 @@ def analizza_mercati():
                         if len(chiusure_daily) >= 200:
                             sma_200_daily = sum(chiusure_daily[-200:]) / 200
                             
-                            # Filtro a Veto: Scarta se sei contro il Macro-Trend Daily
                             if var_perc > 0 and prezzo_attuale < sma_200_daily:
                                 print(f"  └─ 🛑 SCARTATO: Falso Breakout Long (Prezzo {prezzo_attuale:.2f} sotto SMA200 Daily {sma_200_daily:.2f})")
-                                continue # Blocca l'invio e passa al prossimo ticker
+                                continue 
                             elif var_perc < 0 and prezzo_attuale > sma_200_daily:
                                 print(f"  └─ 🛑 SCARTATO: Falso Breakout Short (Prezzo {prezzo_attuale:.2f} sopra SMA200 Daily {sma_200_daily:.2f})")
                                 continue
                     except Exception:
-                        pass # In caso di problemi con il dato giornaliero, andiamo avanti per non perdere il segnale
+                        pass 
 
-                    # --- CHIAMATA NINJA PER LE TRIMESTRALI (Scatta solo qui!) ---
+                    # --- CHIAMATA NINJA PER LE TRIMESTRALI ---
                     url_quote = f"https://query2.finance.yahoo.com/v7/finance/quote?symbols={ticker}"
                     try:
                         time.sleep(1) 
@@ -175,16 +174,25 @@ def analizza_mercati():
                     except Exception:
                         giorni_agli_utili = "Non disponibili"
                         
-                    # --- Calcoli Finali ---
+                    # --- NUOVO: LOGICA INGRESSO IN CONFERMA ---
+                    # Identifica il prezzo esatto a cui piazzare l'ordine pendente
+                    if var_perc > 0:
+                        prezzo_ingresso = massimo_candela
+                        ordine_txt = f"🟢 BUY STOP (Long): {prezzo_ingresso:.2f} $"
+                    else:
+                        prezzo_ingresso = minimo_candela
+                        ordine_txt = f"🔴 SELL STOP (Short): {prezzo_ingresso:.2f} $"
+
+                    # SL e TP vengono calcolati partendo dal prezzo di ingresso effettivo
                     distanza_sl = atr_14 * 2
                     distanza_tp = atr_14 * 4
                     
                     if var_perc > 0:
-                        sl = prezzo_attuale - distanza_sl
-                        tp = prezzo_attuale + distanza_tp
+                        sl = prezzo_ingresso - distanza_sl
+                        tp = prezzo_ingresso + distanza_tp
                     else:
-                        sl = prezzo_attuale + distanza_sl
-                        tp = prezzo_attuale - distanza_tp
+                        sl = prezzo_ingresso + distanza_sl
+                        tp = prezzo_ingresso - distanza_tp
 
                     is_in_trend = (var_perc > 0 and prezzo_attuale > sma_50) or (var_perc < 0 and prezzo_attuale < sma_50)
                     trend_txt = "🟢 A FAVORE DEL TREND" if is_in_trend else "⚠️ CONTRO-TREND"
@@ -206,13 +214,16 @@ def analizza_mercati():
                         giorni_utili=giorni_agli_utili
                     )
 
+                    # --- COSTRUZIONE NOTIFICA (Aggiornata con l'ordine in conferma) ---
                     titolo_emo = "🚀" if var_perc > 0 else "🩸"
                     msg = (f"{titolo_emo} {id_seg}: {nome.upper()}\n"
                            f"Contesto: {sma_txt} | {trend_txt}\n"
-                           f"Prezzo: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
+                           f"Prezzo Chiusura: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
                            f"Volume: {molt_vol:.1f}x media\n"
                            f"Volatilità: Corpo {corpo_candela:.2f}$ (ATR {atr_14:.2f}$)\n"
                            f"------------------------\n"
+                           f"⏳ INGRESSO IN CONFERMA:\n"
+                           f"{ordine_txt}\n"
                            f"🎯 TARGET NETTO: {tp:.2f} $\n"
                            f"🛑 STOP LOSS: {sl:.2f} $\n"
                            f"------------------------\n"
@@ -223,9 +234,8 @@ def analizza_mercati():
         except Exception as e:
             print(f"Errore su {nome}: {e}")
         
-        # Pausa randomica per non sovraccaricare le API (Yahoo e Gemini)
+        # Pausa randomica per non sovraccaricare le API
         time.sleep(random.uniform(1.5, 3.0))
 
 if __name__ == "__main__":
     analizza_mercati()
-    
