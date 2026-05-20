@@ -37,6 +37,7 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
     giorno = datetime.utcnow().strftime("%A")
     ora_utc = datetime.utcnow().strftime("%H:%M")
     
+    # PROMPT INTATTO: Esattamente come nell'ultima versione
     prompt = (
         f"Sei un Risk Manager e consulente di Swing Trading quantitativo (no leva, hold 1-2 settimane). "
         f"Oggi è {giorno}, ore {ora_utc} UTC. (Wall Street apre alle 13:30 e chiude alle 20:00 UTC). "
@@ -101,30 +102,61 @@ def analizza_mercati():
             trs = [max(massimi[i]-minimi[i], abs(massimi[i]-chiusure[i-1]), abs(minimi[i]-chiusure[i-1])) for i in range(-15, -1)]
             atr_14 = sum(trs) / len(trs)
 
-            # --- NUOVO: Calcolo Resistenze e Supporti ---
+            # --- Calcolo Resistenze e Supporti ---
             massimo_mensile = max(massimi)
             minimo_mensile = min(minimi)
             distanza_massimo_perc = ((massimo_mensile - prezzo_attuale) / prezzo_attuale) * 100
             distanza_minimo_perc = ((prezzo_attuale - minimo_mensile) / prezzo_attuale) * 100
 
-            # --- IL BATTITO CARDIACO DEL BOT (LOG SU SCHERMO) ---
+            # --- IMPLEMENTAZIONE PUNTO 2: Filtro Dinamico di Apertura ---
+            # Le 14 e le 15 UTC coprono la prima candela oraria in chiusura (solare vs legale)
+            ora_utc = datetime.utcnow().hour
+            offset_apertura = 1.0 if ora_utc in [14, 15] else 0.0
+            
+            soglia_breakout = 1.5 + offset_apertura      # Diventa 2.5 in apertura
+            soglia_spinta = 2.0 + offset_apertura        # Diventa 3.0 in apertura
+            soglia_assorbimento = 2.5 + offset_apertura  # Diventa 3.5 in apertura
+
+            # --- IL BATTITO CARDIACO DEL BOT (LOG SU SCHERMO INTATTO) ---
             print(f"[{nome}] P: {prezzo_attuale:.2f} | SMA50: {sma_50:.2f} | Vol: {volume_attuale} (Media: {media_volume:.0f}) | ATR: {atr_14:.2f}")
 
-            if media_volume > 0 and volume_attuale >= (media_volume * 1.5):
+            if media_volume > 0 and volume_attuale >= (media_volume * soglia_breakout):
                 id_seg = None
                 
                 if corpo_candela >= atr_14:
                     id_seg = "BREAKOUT VOLATILITÀ"
-                elif (0.3 * atr_14) <= corpo_candela < atr_14 and volume_attuale >= (media_volume * 2.0):
+                elif (0.3 * atr_14) <= corpo_candela < atr_14 and volume_attuale >= (media_volume * soglia_spinta):
                     id_seg = "SPINTA / COSTRUZIONE TREND"
-                elif corpo_candela < (0.3 * atr_14) and volume_attuale >= (media_volume * 2.5):
+                elif corpo_candela < (0.3 * atr_14) and volume_attuale >= (media_volume * soglia_assorbimento):
                     id_seg = "ASSORBIMENTO ISTITUZIONALE"
 
                 if id_seg:
+                    # --- IMPLEMENTAZIONE PUNTO 1: Filtro Multi-Timeframe (SMA 200 Daily) ---
+                    url_daily = f"https://query2.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=1y"
+                    try:
+                        time.sleep(1) # Pausa tattica
+                        resp_daily = session.get(url_daily, timeout=5)
+                        dati_daily = resp_daily.json()
+                        chiusure_daily = dati_daily['chart']['result'][0]['indicators']['quote'][0]['close']
+                        chiusure_daily = [c for c in chiusure_daily if c is not None]
+                        
+                        if len(chiusure_daily) >= 200:
+                            sma_200_daily = sum(chiusure_daily[-200:]) / 200
+                            
+                            # Filtro a Veto: Scarta se sei contro il Macro-Trend Daily
+                            if var_perc > 0 and prezzo_attuale < sma_200_daily:
+                                print(f"  └─ 🛑 SCARTATO: Falso Breakout Long (Prezzo {prezzo_attuale:.2f} sotto SMA200 Daily {sma_200_daily:.2f})")
+                                continue # Blocca l'invio e passa al prossimo ticker
+                            elif var_perc < 0 and prezzo_attuale > sma_200_daily:
+                                print(f"  └─ 🛑 SCARTATO: Falso Breakout Short (Prezzo {prezzo_attuale:.2f} sopra SMA200 Daily {sma_200_daily:.2f})")
+                                continue
+                    except Exception:
+                        pass # In caso di problemi con il dato giornaliero, andiamo avanti per non perdere il segnale
+
                     # --- CHIAMATA NINJA PER LE TRIMESTRALI (Scatta solo qui!) ---
                     url_quote = f"https://query2.finance.yahoo.com/v7/finance/quote?symbols={ticker}"
                     try:
-                        time.sleep(1) # Pausa tattica per non far arrabbiare Yahoo
+                        time.sleep(1) 
                         resp_quote = session.get(url_quote, timeout=5)
                         dati_quote = resp_quote.json()
                         earnings_ts = dati_quote.get("quoteResponse", {}).get("result", [{}])[0].get("earningsTimestamp")
@@ -188,3 +220,4 @@ def analizza_mercati():
 
 if __name__ == "__main__":
     analizza_mercati()
+    
