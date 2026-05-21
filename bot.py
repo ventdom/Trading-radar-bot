@@ -204,10 +204,10 @@ def analizza_mercati():
             distanza_minimo_perc = ((prezzo_attuale - minimo_mensile) / prezzo_attuale) * 100
 
             ora_utc = datetime.utcnow().hour
-            offset_apertura = 1.0 if ora_utc in [14, 15] else 0.0
-            soglia_breakout = 1.5 + offset_apertura
-            soglia_spinta = 2.0 + offset_apertura
-            soglia_assorbimento = 2.5 + offset_apertura
+            offset_apertura = 0.5 if ora_utc in [14, 15] else 0.0
+            soglia_breakout = 1.3 + offset_apertura
+            soglia_spinta = 1.8 + offset_apertura
+            soglia_assorbimento = 2.2 + offset_apertura
 
             print(f"[{nome}] P: {prezzo_attuale:.2f} | SMA50: {sma_50:.2f} | Vol: {volume_attuale} (Media: {media_volume:.0f}) | ATR: {atr_14:.2f}")
 
@@ -216,9 +216,9 @@ def analizza_mercati():
                 
                 if corpo_candela >= atr_14:
                     id_seg = "BREAKOUT VOLATILITÀ"
-                elif (0.3 * atr_14) <= corpo_candela < atr_14 and volume_attuale >= (media_volume * soglia_spinta):
+                elif (0.4 * atr_14) <= corpo_candela < atr_14 and volume_attuale >= (media_volume * soglia_spinta):
                     id_seg = "SPINTA / COSTRUZIONE TREND"
-                elif corpo_candela < (0.3 * atr_14) and volume_attuale >= (media_volume * soglia_assorbimento):
+                elif corpo_candela < (0.4* atr_14) and volume_attuale >= (media_volume * soglia_assorbimento):
                     id_seg = "ASSORBIMENTO ISTITUZIONALE"
 
                 if id_seg:
