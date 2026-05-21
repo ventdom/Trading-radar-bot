@@ -16,7 +16,7 @@ SETTORI = {
         "tickers": {
             "Microsoft": "MSFT", "Apple": "AAPL", "Salesforce": "CRM", "Adobe": "ADBE", 
             "ServiceNow": "NOW", "Oracle": "ORCL", "Palo Alto": "PANW", "CrowdStrike": "CRWD", 
-            "Palantir": "PLTR", "Reddit": "RDDT" # < IPO
+            "Palantir": "PLTR", "Reddit": "RDDT" 
         }
     },
     "SMH": { # AI & SEMICONDUTTORI
@@ -24,7 +24,7 @@ SETTORI = {
         "tickers": {
             "Nvidia": "NVDA", "AMD": "AMD", "TSMC": "TSM", "ASML": "ASML", 
             "Broadcom": "AVGO", "Qualcomm": "QCOM", "Applied Mat": "AMAT", "Intel": "INTC", 
-            "ARM": "ARM", "CoreWeave": "CRWV" # < IPO
+            "ARM": "ARM", "CoreWeave": "CRWV" 
         }
     },
     "XLF": { # BANCHE E FINANZA
@@ -32,7 +32,7 @@ SETTORI = {
         "tickers": {
             "JPMorgan": "JPM", "BofA": "BAC", "Wells Fargo": "WFC", "Citigroup": "C", 
             "Goldman Sachs": "GS", "Morgan Stanley": "MS", "Visa": "V", "Mastercard": "MA", 
-            "Coinbase": "COIN", "MoneyLion": "MNY" # < IPO / High Beta Fintech
+            "Coinbase": "COIN", "MoneyLion": "MNY" 
         }
     },
     "XLE": { # ENERGIA E OIL
@@ -40,7 +40,7 @@ SETTORI = {
         "tickers": {
             "Exxon": "XOM", "Chevron": "CVX", "ConocoPhillips": "COP", "Schlumberger": "SLB", 
             "EOG Resources": "EOG", "Marathon": "MPC", "Pioneer": "PXD", "Valero": "VLO", 
-            "Occidental": "OXY", "BKV Corp": "BKV" # < IPO
+            "Occidental": "OXY", "BKV Corp": "BKV" 
         }
     },
     "ITA": { # DIFESA E AEROSPAZIO
@@ -48,7 +48,7 @@ SETTORI = {
         "tickers": {
             "Lockheed": "LMT", "RTX Corp": "RTX", "Northrop": "NOC", "Gen Dynamics": "GD", 
             "Boeing": "BA", "TransDigm": "TDG", "Heico": "HEI", "L3Harris": "LHX", 
-            "Textron": "TXT", "Loar Group": "LOAR" # < IPO
+            "Textron": "TXT", "Loar Group": "LOAR" 
         }
     },
     "XBI": { # BIOTECH & HEALTH
@@ -56,7 +56,7 @@ SETTORI = {
         "tickers": {
             "Eli Lilly": "LLY", "Novo Nordisk": "NVO", "UnitedHealth": "UNH", "J&J": "JNJ", 
             "Merck": "MRK", "AbbVie": "ABBV", "Pfizer": "PFE", "Vertex": "VRTX", 
-            "Amgen": "AMGN", "CG Oncology": "CGON" # < IPO
+            "Amgen": "AMGN", "CG Oncology": "CGON" 
         }
     }
 }
@@ -103,7 +103,6 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
         return "Analisi AI temporaneamente non disponibile a causa di un timeout di rete."
 
 def identifica_settori_migliori(session):
-    """Scansiona gli ETF e trova i DUE migliori basandosi ESCLUSIVAMENTE sulla chiusura del giorno precedente."""
     print("Analisi Rotazione Settoriale (Lettura chiusure giorno precedente)...")
     risultati_settori = []
     
@@ -126,10 +125,7 @@ def identifica_settori_migliori(session):
             pass
         time.sleep(1)
         
-    # Ordina i settori dal migliore al peggiore
     risultati_settori.sort(key=lambda x: x[1], reverse=True)
-    
-    # Prende i primi due (o tutti se ce ne sono meno di due)
     top_2 = risultati_settori[:2] if len(risultati_settori) >= 2 else risultati_settori
     
     if top_2:
@@ -144,20 +140,16 @@ def analizza_mercati():
     session = requests.Session()
     session.headers.update({'User-Agent': 'Mozilla/5.0'})
     
-    # 1. Trova i DUE settori leader del giorno precedente
     top_settori = identifica_settori_migliori(session)
-    
     if not top_settori:
         print("Errore nel recupero ETF. Esco.")
         return
         
-    # Controllo di sicurezza sul settore migliore in assoluto
     miglior_etf_assoluto, miglior_perf_assoluta = top_settori[0]
     if miglior_perf_assoluta < -0.5:
         print("Il mercato sta crollando ovunque (Leader assoluto negativo). Pausa operativa per protezione capitale.")
         return 
         
-    # 2. Scansiona i ticker dei DUE settori forti
     for etf_leader, perf_leader in top_settori:
         tickers_da_analizzare = SETTORI[etf_leader]["tickers"]
         print(f"Avvio analisi quantitativa oraria sui 10 ticker del settore {etf_leader}...")
@@ -209,32 +201,53 @@ def analizza_mercati():
 
                 print(f"[{nome}] P: {prezzo_attuale:.2f} | SMA50: {sma_50:.2f} | Vol: {volume_attuale} (Media: {media_volume:.0f}) | ATR: {atr_14:.2f}")
 
+                # --- 1. CERCHIAMO I 3 TRIGGER SUL GRAFICO ORARIO ---
                 if media_volume > 0 and volume_attuale >= (media_volume * soglia_breakout):
-                    id_seg = None
+                    id_seg_temp = None
                     
                     if corpo_candela >= atr_14:
-                        id_seg = "BREAKOUT VOLATILITÀ"
+                        id_seg_temp = "BREAKOUT VOLATILITÀ"
                     elif (0.4 * atr_14) <= corpo_candela < atr_14 and volume_attuale >= (media_volume * soglia_spinta):
-                        id_seg = "SPINTA / COSTRUZIONE TREND"
+                        id_seg_temp = "SPINTA / COSTRUZIONE TREND"
                     elif corpo_candela < (0.4 * atr_14) and volume_attuale >= (media_volume * soglia_assorbimento):
-                        id_seg = "ASSORBIMENTO ISTITUZIONALE"
+                        id_seg_temp = "ASSORBIMENTO ISTITUZIONALE"
 
-                    if id_seg:
+                    if id_seg_temp:
                         url_daily = f"https://query2.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=1y"
                         try:
                             time.sleep(1)
                             resp_daily = session.get(url_daily, timeout=5)
-                            chiusure_daily = [c for c in resp_daily.json()['chart']['result'][0]['indicators']['quote'][0]['close'] if c is not None]
+                            quote_daily = resp_daily.json()['chart']['result'][0]['indicators']['quote'][0]
                             
-                            if len(chiusure_daily) >= 200:
-                                sma_200_daily = sum(chiusure_daily[-200:]) / 200
-                                if var_perc > 0 and prezzo_attuale < sma_200_daily:
-                                    print(f"  └─ 🛑 SCARTATO: Contro Macro-Trend (Sotto SMA200)")
-                                    continue 
-                                elif var_perc < 0 and prezzo_attuale > sma_200_daily:
+                            valid_daily = [(c, l, h) for c, l, h in zip(quote_daily['close'], quote_daily['low'], quote_daily['high']) if c is not None and l is not None and h is not None]
+                            
+                            if len(valid_daily) >= 200:
+                                c_daily = [v[0] for v in valid_daily]
+                                l_daily = [v[1] for v in valid_daily]
+                                h_daily = [v[2] for v in valid_daily]
+                                
+                                sma_50_daily = sum(c_daily[-50:]) / 50
+                                sma_200_daily = sum(c_daily[-200:]) / 200
+                                distanza_sma50 = abs(prezzo_attuale - sma_50_daily) / sma_50_daily
+                                
+                                # --- 2. LOGICA PULLBACK: Validazione sul Daily ---
+                                id_seg = None
+                                if var_perc >= 0 and prezzo_attuale > sma_200_daily and distanza_sma50 <= 0.03:
+                                    id_seg = f"🎯 PULLBACK D1 + {id_seg_temp}"
+                                    sl_strutturale = min(l_daily[-10:]) - 0.10 
+                                    tp_strutturale = massimo_mensile
+                                elif var_perc < 0 and prezzo_attuale < sma_200_daily and distanza_sma50 <= 0.03:
+                                    id_seg = f"🎯 PULLBACK D1 + {id_seg_temp}"
+                                    sl_strutturale = max(h_daily[-10:]) + 0.10 
+                                    tp_strutturale = minimo_mensile
+                                else:
+                                    print(f"  └─ 🛑 SCARTATO: Non a contatto con SMA50 Daily (Dist: {distanza_sma50:.1%}) o Contro Trend")
                                     continue
-                        except Exception:
-                            pass
+                            else:
+                                continue
+                        except Exception as e:
+                            print(f"  └─ 🛑 Errore dati Daily: {e}")
+                            continue
 
                         url_quote = f"https://query2.finance.yahoo.com/v7/finance/quote?symbols={ticker}"
                         try:
@@ -244,18 +257,19 @@ def analizza_mercati():
                         except Exception:
                             giorni_agli_utili = "Non disponibili"
                             
-                        if var_perc > 0:
+                        # --- 3. CALCOLO STOP E TARGET STRUTTURALI ---
+                        if var_perc >= 0:
                             prezzo_ingresso = massimo_candela
                             ordine_txt = f"🟢 BUY STOP (Long): {prezzo_ingresso:.2f} $"
-                            sl = prezzo_ingresso - (atr_14 * 2)
-                            tp = prezzo_ingresso + (atr_14 * 4)
+                            sl = sl_strutturale
+                            tp = tp_strutturale if tp_strutturale > (prezzo_ingresso + atr_14) else prezzo_ingresso + ((prezzo_ingresso - sl) * 2)
                         else:
                             prezzo_ingresso = minimo_candela
                             ordine_txt = f"🔴 SELL STOP (Short): {prezzo_ingresso:.2f} $"
-                            sl = prezzo_ingresso + (atr_14 * 2)
-                            tp = prezzo_ingresso - (atr_14 * 4)
+                            sl = sl_strutturale
+                            tp = tp_strutturale if tp_strutturale < (prezzo_ingresso - atr_14) else prezzo_ingresso - ((sl - prezzo_ingresso) * 2)
 
-                        is_in_trend = (var_perc > 0 and prezzo_attuale > sma_50) or (var_perc < 0 and prezzo_attuale < sma_50)
+                        is_in_trend = (var_perc >= 0 and prezzo_attuale > sma_50) or (var_perc < 0 and prezzo_attuale < sma_50)
                         trend_txt = "🟢 A FAVORE DEL TREND" if is_in_trend else "⚠️ CONTRO-TREND"
                         sma_txt = "SOPRA SMA50" if prezzo_attuale > sma_50 else "SOTTO SMA50"
                         molt_vol = volume_attuale / media_volume
@@ -267,7 +281,7 @@ def analizza_mercati():
                             giorni_utili=giorni_agli_utili
                         )
 
-                        titolo_emo = "🚀" if var_perc > 0 else "🩸"
+                        titolo_emo = "🚀" if var_perc >= 0 else "🩸"
                         msg = (f"{titolo_emo} {id_seg}: {nome.upper()}\n"
                                f"📊 Rotazione: {SETTORI[etf_leader]['nome_settore']}\n"
                                f"Contesto: {sma_txt} | {trend_txt}\n"
@@ -278,7 +292,7 @@ def analizza_mercati():
                                f"⏳ INGRESSO IN CONFERMA:\n"
                                f"{ordine_txt}\n"
                                f"🎯 TARGET NETTO: {tp:.2f} $\n"
-                               f"🛑 STOP LOSS: {sl:.2f} $\n"
+                               f"🛑 STOP LOSS STRUTTURALE: {sl:.2f} $\n"
                                f"------------------------\n"
                                f"🤖 ANALISI DELL'ESPERTO:\n{commento_ai}")
                         
