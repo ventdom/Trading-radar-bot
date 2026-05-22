@@ -118,7 +118,7 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
     headers = {'Content-Type': 'application/json'}
     
     try:
-        response = requests.post(url, headers=headers, json=payload, timeout=12)
+        response = requests.post(url, headers=headers, json=payload, timeout=20)
         response.raise_for_status()
         return response.json()['candidates'][0]['content']['parts'][0]['text'].strip()
     except Exception as e:
