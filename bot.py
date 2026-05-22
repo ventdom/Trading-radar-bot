@@ -293,11 +293,11 @@ def analizza_mercati():
                         sma_txt = "SOPRA SMA50" if prezzo_attuale > sma_50 else "SOTTO SMA50"
                         molt_vol = volume_attuale / media_volume
 
-                                                commento_ai = chiedi_analisi_ai(
-                            ticker=nome, id_seg=id_seg, prezzo=prezzo_attuale, var_perc=var_perc, 
-                            vol_molt=molt_vol, trend_txt=f"{sma_txt} ({trend_txt})", atr=atr_14, 
-                            corpo=corpo_candela, dist_max=distanza_massimo_perc, dist_min=distanza_minimo_perc, 
-                            giorni_utili=giorni_agli_utili
+                        commento_ai = chiedi_analisi_ai(
+                        ticker=nome, id_seg=id_seg, prezzo=prezzo_attuale, var_perc=var_perc, 
+                        vol_molt=molt_vol, trend_txt=f"{sma_txt} ({trend_txt})", atr=atr_14, 
+                        corpo=corpo_candela, dist_max=distanza_massimo_perc, dist_min=distanza_minimo_perc, 
+                        giorni_utili=giorni_agli_utili
                         )
 
                         # --- NUOVA GESTIONE DEL MESSAGGIO (LONG vs SHORT) ---
