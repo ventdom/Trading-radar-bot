@@ -3,6 +3,9 @@ import requests
 import time
 import random
 from datetime import datetime
+from bs4 import BeautifulSoup
+import re
+
 
 # --- 1. SEGRETI ---
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
@@ -120,6 +123,58 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
         return response.json()['candidates'][0]['content']['parts'][0]['text'].strip()
     except Exception as e:
         return "Analisi AI temporaneamente non disponibile a causa di un timeout di rete."
+
+def recupera_utili_sicuri(ticker, session):
+    """Sistema di ridondanza dati: tenta Yahoo Finance, se fallisce usa Finviz."""
+    # --- PIANO A: Yahoo Finance ---
+    url_quote = f"https://query2.finance.yahoo.com/v7/finance/quote?symbols={ticker}"
+    try:
+        time.sleep(1) 
+        resp = session.get(url_quote, timeout=5).json()
+        earnings_ts = resp.get("quoteResponse", {}).get("result", [{}])[0].get("earningsTimestamp")
+        if earnings_ts:
+            return int((earnings_ts - time.time()) / 86400)
+    except Exception:
+        pass # Yahoo ha fallito o ha restituito un dato vuoto, passo al Piano B
+        
+    # --- PIANO B: Web Scraping su Finviz ---
+    try:
+        # Non aggiungo un print per non sporcare il tuo terminale pulito, agisce in background
+        url_finviz = f"https://finviz.com/quote.ashx?t={ticker}"
+        # Mascheriamo la chiamata per non farci bloccare dal firewall di Finviz
+        headers_finviz = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+        time.sleep(random.uniform(1.5, 2.5)) 
+        
+        resp_finviz = session.get(url_finviz, headers=headers_finviz, timeout=10)
+        if resp_finviz.status_code == 200:
+            soup = BeautifulSoup(resp_finviz.text, 'html.parser')
+            # Cerca la cella che contiene il testo 'Earnings'
+            td_earnings = soup.find('td', string=re.compile('Earnings'))
+            if td_earnings:
+                # Estrae il valore dalla cella a destra (es. "May 07 / amc")
+                valore_data = td_earnings.find_next_sibling('td').text.strip()
+                
+                # Estrae solo il mese e il giorno tramite Regex (es. "May 07")
+                match = re.search(r'([a-zA-Z]{3}\s\d{1,2})', valore_data)
+                if match:
+                    clean_date = match.group(1)
+                    anno_corrente = datetime.utcnow().year
+                    # Converte la stringa in una data matematica
+                    data_utili = datetime.strptime(f"{clean_date} {anno_corrente}", "%b %d %Y")
+                    giorni_mancanti = (data_utili - datetime.utcnow()).days
+                    
+                    # Correzione di fine anno: se la data è troppo vecchia (es. dicembre)
+                    # e siamo a gennaio, sposta la data all'anno successivo
+                    if giorni_mancanti < -300: 
+                        data_utili = data_utili.replace(year=anno_corrente + 1)
+                        giorni_mancanti = (data_utili - datetime.utcnow()).days
+                        
+                    return giorni_mancanti
+    except Exception:
+        pass
+        
+    # Se entrambi i piani falliscono in modo catastrofico
+    return "Sconosciuti"
 
 def identifica_settori_migliori(session):
     print("Analisi Rotazione Settoriale (Lettura chiusure giorno precedente)...")
@@ -268,13 +323,9 @@ def analizza_mercati():
                             print(f"  └─ 🛑 Errore dati Daily: {e}")
                             continue
 
-                        url_quote = f"https://query2.finance.yahoo.com/v7/finance/quote?symbols={ticker}"
-                        try:
-                            time.sleep(1) 
-                            earnings_ts = session.get(url_quote, timeout=5).json().get("quoteResponse", {}).get("result", [{}])[0].get("earningsTimestamp")
-                            giorni_agli_utili = int((earnings_ts - time.time()) / 86400) if earnings_ts else "Sconosciuti"
-                        except Exception:
-                            giorni_agli_utili = "Non disponibili"
+                          # Richiama il sistema a doppia fonte (YF + Finviz)
+                        giorni_agli_utili = recupera_utili_sicuri(ticker, session)
+
                             
                         # --- 3. CALCOLO STOP E TARGET STRUTTURALI ---
                         if var_perc >= 0:
