@@ -9,57 +9,76 @@ TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["CHAT_ID"]
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"] 
 
-# --- 2. IL MOTORE DI ROTAZIONE SETTORIALE (6 Settori, 10 Ticker l'uno con 1 IPO) ---
+# --- 2. IL MOTORE DI ROTAZIONE SETTORIALE (6 Settori, 15 Ticker l'uno con 2 IPO/High-Beta) ---
 SETTORI = {
     "XLK": { # TECH & SOFTWARE
         "nome_settore": "💻 TECH / SOFTWARE",
         "tickers": {
+            # Core (13): Alta liquidità e volatilità intra-settimanale
             "Microsoft": "MSFT", "Apple": "AAPL", "Salesforce": "CRM", "Adobe": "ADBE", 
             "ServiceNow": "NOW", "Oracle": "ORCL", "Palo Alto": "PANW", "CrowdStrike": "CRWD", 
-            "Palantir": "PLTR", "Reddit": "RDDT" 
+            "Palantir": "PLTR", "Meta": "META", "Netflix": "NFLX", "Snowflake": "SNOW", "Datadog": "DDOG",
+            # IPO/High-Beta Recenti (2)
+            "Reddit": "RDDT", "Rubrik": "RBRK" 
         }
     },
     "SMH": { # AI & SEMICONDUTTORI
         "nome_settore": "🧠 AI & CHIP",
         "tickers": {
+            # Core (13)
             "Nvidia": "NVDA", "AMD": "AMD", "TSMC": "TSM", "ASML": "ASML", 
             "Broadcom": "AVGO", "Qualcomm": "QCOM", "Applied Mat": "AMAT", "Intel": "INTC", 
-            "ARM": "ARM", "CoreWeave": "CRWV" 
+            "Micron": "MU", "Texas Instr": "TXN", "Marvell": "MRVL", "Monolithic": "MPWR", "ARM": "ARM",
+            # IPO/High-Beta Recenti (2)
+            "Astera Labs": "ALAB", "CoreWeave": "CRWV" 
         }
     },
     "XLF": { # BANCHE E FINANZA
         "nome_settore": "🏦 FINANZA",
         "tickers": {
+            # Core (13)
             "JPMorgan": "JPM", "BofA": "BAC", "Wells Fargo": "WFC", "Citigroup": "C", 
             "Goldman Sachs": "GS", "Morgan Stanley": "MS", "Visa": "V", "Mastercard": "MA", 
-            "Coinbase": "COIN", "MoneyLion": "MNY" 
+            "Coinbase": "COIN", "Robinhood": "HOOD", "SoFi": "SOFI", "Upstart": "UPST", "Affirm": "AFRM",
+            # IPO/High-Beta Recenti (2)
+            "Bowhead Specialty": "BOW", "MoneyLion": "MNY" 
         }
     },
     "XLE": { # ENERGIA E OIL
         "nome_settore": "🛢️ ENERGIA",
         "tickers": {
+            # Core (13)
             "Exxon": "XOM", "Chevron": "CVX", "ConocoPhillips": "COP", "Schlumberger": "SLB", 
-            "EOG Resources": "EOG", "Marathon": "MPC", "Pioneer": "PXD", "Valero": "VLO", 
-            "Occidental": "OXY", "BKV Corp": "BKV" 
+            "EOG Resources": "EOG", "Marathon": "MPC", "Occidental": "OXY", "Valero": "VLO", 
+            "Williams": "WMB", "Halliburton": "HAL", "Pioneer": "PXD", "Hess": "HES", "Baker Hughes": "BKR",
+            # IPO/High-Beta Recenti (2)
+            "BKV Corp": "BKV", "TXO Partners": "TXO" 
         }
     },
     "ITA": { # DIFESA E AEROSPAZIO
         "nome_settore": "🪖 DIFESA E AEROSPAZIO",
         "tickers": {
+            # Core (13)
             "Lockheed": "LMT", "RTX Corp": "RTX", "Northrop": "NOC", "Gen Dynamics": "GD", 
             "Boeing": "BA", "TransDigm": "TDG", "Heico": "HEI", "L3Harris": "LHX", 
-            "Textron": "TXT", "Loar Group": "LOAR" 
+            "Textron": "TXT", "Howmet": "HWM", "Spirit Aero": "SPR", "Woodward": "WWD", "Moog": "MOG-A",
+            # IPO/High-Beta Recenti (2)
+            "Loar Group": "LOAR", "AST SpaceMobile": "ASTS" 
         }
     },
     "XBI": { # BIOTECH & HEALTH
         "nome_settore": "🧬 BIOTECH & HEALTH",
         "tickers": {
+            # Core (13)
             "Eli Lilly": "LLY", "Novo Nordisk": "NVO", "UnitedHealth": "UNH", "J&J": "JNJ", 
             "Merck": "MRK", "AbbVie": "ABBV", "Pfizer": "PFE", "Vertex": "VRTX", 
-            "Amgen": "AMGN", "CG Oncology": "CGON" 
+            "Amgen": "AMGN", "Gilead": "GILD", "Regeneron": "REGN", "Intuitive Surg": "ISRG", "CRISPR": "CRSP",
+            # IPO/High-Beta Recenti (2)
+            "CG Oncology": "CGON", "Kyverna": "KYTX" 
         }
     }
 }
+
 
 def invia_notifica(messaggio, tentativi=3):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
@@ -126,15 +145,15 @@ def identifica_settori_migliori(session):
         time.sleep(1)
         
     risultati_settori.sort(key=lambda x: x[1], reverse=True)
-    top_2 = risultati_settori[:2] if len(risultati_settori) >= 2 else risultati_settori
+    top_3 = risultati_settori[:3] if len(risultati_settori) >= 3 else risultati_settori
     
-    if top_2:
+    if top_3:
         print("\n=> SETTORI LEADER IDENTIFICATI (Su base ieri):")
-        for etf, perf in top_2:
+        for etf, perf in top_3:
             print(f"   - {SETTORI[etf]['nome_settore']} ({etf}) con {perf:+.2f}%")
     print()
     
-    return top_2
+    return top_3
 
 def analizza_mercati():
     session = requests.Session()
