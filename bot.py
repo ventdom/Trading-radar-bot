@@ -308,7 +308,7 @@ def analizza_mercati():
                                 id_seg = None
                                 if var_perc >= 0 and prezzo_attuale > sma_200_daily and distanza_sma50 <= 0.03:
                                     id_seg = f"🎯 PULLBACK D1 + {id_seg_temp}"
-                                    sl_strutturale = min(l_daily[-10:]) - 0.10 
+                                    sl_strutturale = min(l_daily[-10:]) - (0.2 * atr_14) 
                                     tp_strutturale = massimo_mensile
                                 elif var_perc < 0 and prezzo_attuale < sma_200_daily and distanza_sma50 <= 0.03:
                                     id_seg = f"🎯 PULLBACK D1 + {id_seg_temp}"
