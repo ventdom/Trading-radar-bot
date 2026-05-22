@@ -293,29 +293,46 @@ def analizza_mercati():
                         sma_txt = "SOPRA SMA50" if prezzo_attuale > sma_50 else "SOTTO SMA50"
                         molt_vol = volume_attuale / media_volume
 
-                        commento_ai = chiedi_analisi_ai(
+                                                commento_ai = chiedi_analisi_ai(
                             ticker=nome, id_seg=id_seg, prezzo=prezzo_attuale, var_perc=var_perc, 
                             vol_molt=molt_vol, trend_txt=f"{sma_txt} ({trend_txt})", atr=atr_14, 
                             corpo=corpo_candela, dist_max=distanza_massimo_perc, dist_min=distanza_minimo_perc, 
                             giorni_utili=giorni_agli_utili
                         )
 
-                        titolo_emo = "🚀" if var_perc >= 0 else "🩸"
-                        msg = (f"{titolo_emo} {id_seg}: {nome.upper()}\n"
-                               f"📊 Rotazione: {SETTORI[etf_leader]['nome_settore']}\n"
-                               f"Contesto: {sma_txt} | {trend_txt}\n"
-                               f"Prezzo Chiusura: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
-                               f"Volume: {molt_vol:.1f}x media\n"
-                               f"Volatilità: Corpo {corpo_candela:.2f}$ (ATR {atr_14:.2f}$)\n"
-                               f"------------------------\n"
-                               f"⏳ INGRESSO IN CONFERMA:\n"
-                               f"{ordine_txt}\n"
-                               f"🎯 TARGET NETTO: {tp:.2f} $\n"
-                               f"🛑 STOP LOSS STRUTTURALE: {sl:.2f} $\n"
-                               f"------------------------\n"
-                               f"🤖 ANALISI DELL'ESPERTO:\n{commento_ai}")
+                        # --- NUOVA GESTIONE DEL MESSAGGIO (LONG vs SHORT) ---
+                        if var_perc >= 0:
+                            # Setup LONG (Eseguibile per portafogli Cash)
+                            msg = (f"🚀 {id_seg}: {nome.upper()}\n"
+                                   f"📊 Rotazione: {SETTORI[etf_leader]['nome_settore']}\n"
+                                   f"Contesto: {sma_txt} | {trend_txt}\n"
+                                   f"Prezzo Chiusura: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
+                                   f"Volume: {molt_vol:.1f}x media\n"
+                                   f"Volatilità: Corpo {corpo_candela:.2f}$ (ATR {atr_14:.2f}$)\n"
+                                   f"------------------------\n"
+                                   f"⏳ INGRESSO IN CONFERMA:\n"
+                                   f"{ordine_txt}\n"
+                                   f"🎯 TARGET NETTO: {tp:.2f} $\n"
+                                   f"🛑 STOP LOSS STRUTTURALE: {sl:.2f} $\n"
+                                   f"------------------------\n"
+                                   f"🤖 ANALISI DELL'ESPERTO:\n{commento_ai}")
+                        else:
+                            # Setup SHORT (Avviso blocco operativo)
+                            msg = (f"🩸 {id_seg}: {nome.upper()}\n"
+                                   f"📊 Rotazione: {SETTORI[etf_leader]['nome_settore']}\n"
+                                   f"Contesto: {sma_txt} | {trend_txt}\n"
+                                   f"Prezzo Chiusura: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
+                                   f"Volume: {molt_vol:.1f}x media\n"
+                                   f"------------------------\n"
+                                   f"⚠️ BLOCCO OPERATIVO (NO LEVA):\n"
+                                   f"Questo è un setup Ribassista (Short verso {tp:.2f}$). "
+                                   f"Poiché la tua strategia è 100% Cash/Senza Leva, l'operazione non è statisticamente sicura né eseguibile. "
+                                   f"Notifica fornita solo per Market Intelligence. Resta liquido.\n"
+                                   f"------------------------\n"
+                                   f"🤖 ANALISI DELL'ESPERTO:\n{commento_ai}")
                         
                         invia_notifica(msg)
+
                     
             except Exception as e:
                 print(f"Errore su {nome}: {e}")
