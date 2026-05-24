@@ -212,6 +212,57 @@ def identifica_settori_migliori(session):
     
     return top_3
 
+def recupera_gex_sp500():
+    """Recupera il GEX giornaliero: usa la cache locale se presente, altrimenti chiama l'API."""
+    cache_file = "gex_cache.json"
+    oggi_str = datetime.utcnow().strftime("%Y-%m-%d")
+    
+    # --- 1. LETTURA DALLA CACHE ---
+    if os.path.exists(cache_file):
+        try:
+            with open(cache_file, "r") as f:
+                cache = json.load(f)
+                # Se la data nella cache è uguale a oggi, NON chiamare l'API
+                if cache.get("data") == oggi_str:
+                    print(f"✅ GEX recuperato dalla cache di oggi ({oggi_str}). Nessuna chiamata API consumata.")
+                    return cache.get("gex_value"), cache.get("gex_regime")
+        except Exception as e:
+            print(f"⚠️ Errore lettura cache GEX, forzo chiamata API: {e}")
+
+    # --- 2. CHIAMATA API (Solo 1 volta al giorno) ---
+    print("🔄 Nessuna cache valida per oggi. Richiesta GEX a FlashAlpha in corso...")
+    url_flashalpha = "https://api.flashalpha.com/v1/gex?ticker=SPX"
+    headers = {"Authorization": f"Bearer {FLASHALPHA_API_KEY}"}
+    
+    try:
+        response = requests.get(url_flashalpha, headers=headers, timeout=10)
+        response.raise_for_status()
+        dati = response.json()
+        
+        gex_value = dati.get("gex_absolute", 0) 
+        gex_regime = "POSITIVO (Bassa Volatilità/Mean Reversion)" if gex_value > 0 else "NEGATIVO (Alta Volatilità/Trend Esteso)"
+        
+        # --- 3. SALVATAGGIO NELLA CACHE ---
+        with open(cache_file, "w") as f:
+            json.dump({
+                "data": oggi_str,
+                "gex_value": gex_value,
+                "gex_regime": gex_regime
+            }, f)
+            
+        print("💾 Cache GEX aggiornata e salvata con successo.")
+        return gex_value, gex_regime
+        
+    except Exception as e:
+        print(f"❌ Errore recupero GEX API: {e}")
+        # In caso di errore API, proviamo a usare la cache vecchia se esiste, altrimenti fallback neutro
+        if os.path.exists(cache_file):
+            with open(cache_file, "r") as f:
+                old_cache = json.load(f)
+                print("⚠️ Uso dati GEX di ieri come fallback d'emergenza.")
+                return old_cache.get("gex_value"), old_cache.get("gex_regime")
+        return 0, "SCONOSCIUTO"
+
 def analizza_mercati():
     session = requests.Session()
     session.headers.update({'User-Agent': 'Mozilla/5.0'})
