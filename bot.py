@@ -7,83 +7,78 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import re
 
-
 # --- 1. SEGRETI ---
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["CHAT_ID"]
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"] 
-FLASHALPHA_API_KEY = os.environ["FLASHALPHA_API_KEY"] # <-- Nuovo segreto per il GEX
+FLASHALPHA_API_KEY = os.environ["FLASHALPHA_API_KEY"] 
 
-# --- 2. IL MOTORE DI ROTAZIONE SETTORIALE (6 Settori, 15 Ticker l'uno con 2 IPO/High-Beta) ---
+# --- 2. IL MOTORE DI ROTAZIONE SETTORIALE E PROXY GEX ---
+PROXY_SETTORI = {
+    "XLK": "AAPL",  # Tech
+    "SMH": "NVDA",  # AI & Chip
+    "XLF": "JPM",   # Finanza
+    "XLE": "XOM",   # Energia
+    "ITA": "LMT",   # Difesa
+    "XBI": "LLY"    # Biotech
+}
+
 SETTORI = {
     "XLK": { # TECH & SOFTWARE
         "nome_settore": "💻 TECH / SOFTWARE",
         "tickers": {
-            # Core (13): Alta liquidità e volatilità intra-settimanale
             "Microsoft": "MSFT", "Apple": "AAPL", "Salesforce": "CRM", "Adobe": "ADBE", 
             "ServiceNow": "NOW", "Oracle": "ORCL", "Palo Alto": "PANW", "CrowdStrike": "CRWD", 
             "Palantir": "PLTR", "Meta": "META", "Netflix": "NFLX", "Snowflake": "SNOW", "Datadog": "DDOG",
-            # IPO/High-Beta Recenti (2)
             "Reddit": "RDDT", "Rubrik": "RBRK" 
         }
     },
     "SMH": { # AI & SEMICONDUTTORI
         "nome_settore": "🧠 AI & CHIP",
         "tickers": {
-            # Core (13)
             "Nvidia": "NVDA", "AMD": "AMD", "TSMC": "TSM", "ASML": "ASML", 
             "Broadcom": "AVGO", "Qualcomm": "QCOM", "Applied Mat": "AMAT", "Intel": "INTC", 
             "Micron": "MU", "Texas Instr": "TXN", "Marvell": "MRVL", "Monolithic": "MPWR", "ARM": "ARM",
-            # IPO/High-Beta Recenti (2)
             "Astera Labs": "ALAB", "CoreWeave": "CRWV" 
         }
     },
     "XLF": { # BANCHE E FINANZA
         "nome_settore": "🏦 FINANZA",
         "tickers": {
-            # Core (13)
             "JPMorgan": "JPM", "BofA": "BAC", "Wells Fargo": "WFC", "Citigroup": "C", 
             "Goldman Sachs": "GS", "Morgan Stanley": "MS", "Visa": "V", "Mastercard": "MA", 
             "Coinbase": "COIN", "Robinhood": "HOOD", "SoFi": "SOFI", "Upstart": "UPST", "Affirm": "AFRM",
-            # IPO/High-Beta Recenti (2)
             "Bowhead Specialty": "BOW", "MoneyLion": "MNY" 
         }
     },
     "XLE": { # ENERGIA E OIL
         "nome_settore": "🛢️ ENERGIA",
         "tickers": {
-            # Core (13)
             "Exxon": "XOM", "Chevron": "CVX", "ConocoPhillips": "COP", "Schlumberger": "SLB", 
             "EOG Resources": "EOG", "Marathon": "MPC", "Occidental": "OXY", "Valero": "VLO", 
             "Williams": "WMB", "Halliburton": "HAL", "Pioneer": "PXD", "Hess": "HES", "Baker Hughes": "BKR",
-            # IPO/High-Beta Recenti (2)
             "BKV Corp": "BKV", "TXO Partners": "TXO" 
         }
     },
     "ITA": { # DIFESA E AEROSPAZIO
         "nome_settore": "🪖 DIFESA E AEROSPAZIO",
         "tickers": {
-            # Core (13)
             "Lockheed": "LMT", "RTX Corp": "RTX", "Northrop": "NOC", "Gen Dynamics": "GD", 
             "Boeing": "BA", "TransDigm": "TDG", "Heico": "HEI", "L3Harris": "LHX", 
             "Textron": "TXT", "Howmet": "HWM", "Spirit Aero": "SPR", "Woodward": "WWD", "Moog": "MOG-A",
-            # IPO/High-Beta Recenti (2)
             "Loar Group": "LOAR", "AST SpaceMobile": "ASTS" 
         }
     },
     "XBI": { # BIOTECH & HEALTH
         "nome_settore": "🧬 BIOTECH & HEALTH",
         "tickers": {
-            # Core (13)
             "Eli Lilly": "LLY", "Novo Nordisk": "NVO", "UnitedHealth": "UNH", "J&J": "JNJ", 
             "Merck": "MRK", "AbbVie": "ABBV", "Pfizer": "PFE", "Vertex": "VRTX", 
             "Amgen": "AMGN", "Gilead": "GILD", "Regeneron": "REGN", "Intuitive Surg": "ISRG", "CRISPR": "CRSP",
-            # IPO/High-Beta Recenti (2)
             "CG Oncology": "CGON", "Kyverna": "KYTX" 
         }
     }
 }
-
 
 def invia_notifica(messaggio, tentativi=3):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
@@ -93,10 +88,10 @@ def invia_notifica(messaggio, tentativi=3):
             response = requests.post(url, data=dati, timeout=10)
             response.raise_for_status() 
             return 
-        except Exception as e:
+        except Exception:
             time.sleep(2)
 
-def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr, corpo, dist_max, dist_min, giorni_utili):
+def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr, corpo, dist_max, dist_min, giorni_utili, gex_val, gex_regime, proxy_ticker):
     url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     giorno = datetime.utcnow().strftime("%A")
     ora_utc = datetime.utcnow().strftime("%H:%M")
@@ -104,8 +99,8 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
     prompt = (
         f"Sei un Risk Manager e consulente di Swing Trading quantitativo (no leva, hold 1-2 settimane). "
         f"Oggi è {giorno}, ore {ora_utc} UTC.\n"
-        f"Contesto Macro (S&P500): Il Gamma Exposure (GEX) è {gex_val}M, Regime: {gex_regime}. "
-        f"Se il GEX è Positivo, prediligi prese di beneficio rapide sulle resistenze. Se Negativo, tollera volatilità e allarga gli stop.\n\n"
+        f"CONTESTO SETTORIALE (Leader GEX): L'Alpha Proxy del settore è {proxy_ticker}. Il suo Gamma Exposure (GEX) è {gex_val}M, Regime: {gex_regime}.\n"
+        f"Usa questo dato: se il GEX del leader è Positivo, il settore è stabile (mean-reversion sulle resistenze). Se Negativo, c'è forte direzionalità e volatilità latente (i breakout possono esplodere o fallire miseramente).\n\n"
         f"Valuta questo segnale su {ticker}:\n"
         f"- Segnale: {id_seg} a {prezzo:.2f}$ ({var_perc:+.2f}% oggi)\n"
         f"- Volume: {vol_molt:.1f}x la media\n"
@@ -113,7 +108,7 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
         f"- Volatilità: Corpo candela {corpo:.2f}$ (Media ATR {atr:.2f}$)\n"
         f"- Struttura Grafica: Distanza dal Massimo Mensile {dist_max:.1f}%, dal Minimo {dist_min:.1f}%.\n"
         f"- Utili: Mancano {giorni_utili} giorni.\n\n"
-        f"Scrivi un commento operativo (max 3 frasi). Correla il setup del ticker al regime GEX attuale per validare il Rischio/Rendimento. "
+        f"Scrivi un commento operativo (max 3 frasi). Correla il setup del ticker alla salute GEX del suo leader settoriale ({proxy_ticker}) per validare il Rischio/Rendimento. "
         f"Se mancano meno di 7 giorni agli utili, blocca categoricamente l'ingresso."
     )
     
@@ -124,12 +119,10 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
         response = requests.post(url, headers=headers, json=payload, timeout=20)
         response.raise_for_status()
         return response.json()['candidates'][0]['content']['parts'][0]['text'].strip()
-    except Exception as e:
+    except Exception:
         return "Analisi AI temporaneamente non disponibile a causa di un timeout di rete."
 
 def recupera_utili_sicuri(ticker, session):
-    """Sistema di ridondanza dati: tenta Yahoo Finance, se fallisce usa Finviz."""
-    # --- PIANO A: Yahoo Finance ---
     url_quote = f"https://query2.finance.yahoo.com/v7/finance/quote?symbols={ticker}"
     try:
         time.sleep(1) 
@@ -138,45 +131,33 @@ def recupera_utili_sicuri(ticker, session):
         if earnings_ts:
             return int((earnings_ts - time.time()) / 86400)
     except Exception:
-        pass # Yahoo ha fallito o ha restituito un dato vuoto, passo al Piano B
+        pass
         
-    # --- PIANO B: Web Scraping su Finviz ---
     try:
-        # Non aggiungo un print per non sporcare il tuo terminale pulito, agisce in background
         url_finviz = f"https://finviz.com/quote.ashx?t={ticker}"
-        # Mascheriamo la chiamata per non farci bloccare dal firewall di Finviz
         headers_finviz = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
         time.sleep(random.uniform(1.5, 2.5)) 
         
         resp_finviz = session.get(url_finviz, headers=headers_finviz, timeout=10)
         if resp_finviz.status_code == 200:
             soup = BeautifulSoup(resp_finviz.text, 'html.parser')
-            # Cerca la cella che contiene il testo 'Earnings'
             td_earnings = soup.find('td', string=re.compile('Earnings'))
             if td_earnings:
-                # Estrae il valore dalla cella a destra (es. "May 07 / amc")
                 valore_data = td_earnings.find_next_sibling('td').text.strip()
-                
-                # Estrae solo il mese e il giorno tramite Regex (es. "May 07")
                 match = re.search(r'([a-zA-Z]{3}\s\d{1,2})', valore_data)
                 if match:
                     clean_date = match.group(1)
                     anno_corrente = datetime.utcnow().year
-                    # Converte la stringa in una data matematica
                     data_utili = datetime.strptime(f"{clean_date} {anno_corrente}", "%b %d %Y")
                     giorni_mancanti = (data_utili - datetime.utcnow()).days
                     
-                    # Correzione di fine anno: se la data è troppo vecchia (es. dicembre)
-                    # e siamo a gennaio, sposta la data all'anno successivo
                     if giorni_mancanti < -300: 
                         data_utili = data_utili.replace(year=anno_corrente + 1)
                         giorni_mancanti = (data_utili - datetime.utcnow()).days
-                        
                     return giorni_mancanti
     except Exception:
         pass
         
-    # Se entrambi i piani falliscono in modo catastrofico
     return "Sconosciuti"
 
 def identifica_settori_migliori(session):
@@ -213,75 +194,65 @@ def identifica_settori_migliori(session):
     
     return top_3
 
-def recupera_gex_sp500():
-    """Recupera il GEX giornaliero: usa la cache locale se presente, altrimenti chiama l'API."""
+def recupera_gex_settoriale(etf_leader):
+    """Recupera il GEX del Proxy di Settore: usa la cache se valida, altrimenti API."""
+    proxy_ticker = PROXY_SETTORI.get(etf_leader, "AAPL")
     cache_file = "gex_cache.json"
     oggi_str = datetime.utcnow().strftime("%Y-%m-%d")
     
-    # --- 1. LETTURA DALLA CACHE ---
     if os.path.exists(cache_file):
         try:
             with open(cache_file, "r") as f:
                 cache = json.load(f)
-                # Se la data nella cache è uguale a oggi, NON chiamare l'API
-                if cache.get("data") == oggi_str:
-                    print(f"✅ GEX recuperato dalla cache di oggi ({oggi_str}). Nessuna chiamata API consumata.")
-                    return cache.get("gex_value"), cache.get("gex_regime")
+                if cache.get("data") == oggi_str and cache.get("ticker") == proxy_ticker:
+                    print(f"✅ GEX Proxy ({proxy_ticker}) recuperato da cache. Zero API consumate.")
+                    return cache.get("gex_value"), cache.get("gex_regime"), proxy_ticker
         except Exception as e:
-            print(f"⚠️ Errore lettura cache GEX, forzo chiamata API: {e}")
+            print(f"⚠️ Errore cache GEX: {e}")
 
-    # --- 2. CHIAMATA API (Solo 1 volta al giorno) ---
-    print("🔄 Nessuna cache valida per oggi. Richiesta GEX a FlashAlpha in corso...")
-    url_flashalpha = "https://lab.flashalpha.com/v1/exposure/gex/SPY"
+    print(f"🔄 Nessuna cache per oggi. Richiesta GEX {proxy_ticker} a FlashAlpha...")
+    url_flashalpha = f"https://lab.flashalpha.com/v1/exposure/gex/{proxy_ticker}"
     
-    # 1. Aggiungiamo User-Agent per ingannare i filtri anti-bot e puliamo la chiave
     headers = {
         "X-Api-Key": FLASHALPHA_API_KEY.strip(),
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
     
     try:
         response = requests.get(url_flashalpha, headers=headers, timeout=10)
         
-        # 2. DEBUGGING AVANZATO: Intercettiamo il payload di errore prima che Python crashi
         if response.status_code != 200:
-            print(f"🛑 ERRORE SERVER {response.status_code}")
-            print(f"💬 Risposta ufficiale di FlashAlpha: {response.text}")
+            print(f"🛑 ERRORE SERVER {response.status_code}: {response.text}")
             response.raise_for_status()
         dati = response.json()
         
         gex_value = dati.get("net_gex", 0) 
-        gex_regime = "POSITIVO (Bassa Volatilità/Mean Reversion)" if gex_value > 0 else "NEGATIVO (Alta Volatilità/Trend Esteso)"
+        gex_regime = "POSITIVO (Stabilità/Mean Reversion)" if gex_value > 0 else "NEGATIVO (Alta Volatilità/Trend Esteso)"
         
-        # --- 3. SALVATAGGIO NELLA CACHE ---
         with open(cache_file, "w") as f:
             json.dump({
                 "data": oggi_str,
+                "ticker": proxy_ticker,
                 "gex_value": gex_value,
                 "gex_regime": gex_regime
             }, f)
             
         print("💾 Cache GEX aggiornata e salvata con successo.")
-        return gex_value, gex_regime
+        return gex_value, gex_regime, proxy_ticker
         
     except Exception as e:
         print(f"❌ Errore recupero GEX API: {e}")
-        # In caso di errore API, proviamo a usare la cache vecchia se esiste, altrimenti fallback neutro
         if os.path.exists(cache_file):
             with open(cache_file, "r") as f:
                 old_cache = json.load(f)
-                print("⚠️ Uso dati GEX di ieri come fallback d'emergenza.")
-                return old_cache.get("gex_value"), old_cache.get("gex_regime")
-        return 0, "SCONOSCIUTO"
+                print("⚠️ Uso dati GEX in fallback.")
+                return old_cache.get("gex_value", 0), old_cache.get("gex_regime", "SCONOSCIUTO"), old_cache.get("ticker", proxy_ticker)
+        return 0, "SCONOSCIUTO", proxy_ticker
 
 def analizza_mercati():
     session = requests.Session()
     session.headers.update({'User-Agent': 'Mozilla/5.0'})
 
-     # 1. Recupero GEX a livello globale
-    gex_val, gex_regime = recupera_gex_sp500()
-    print(f"Market Regime GEX: {gex_val} - {gex_regime}")
-    
     top_settori = identifica_settori_migliori(session)
     if not top_settori:
         print("Errore nel recupero ETF. Esco.")
@@ -292,9 +263,14 @@ def analizza_mercati():
         print("Il mercato sta crollando ovunque (Leader assoluto negativo). Pausa operativa per protezione capitale.")
         return 
         
+    # Calcolo del GEX solo sul settore LEADER assoluto (top_settori[0]) per massimizzare l'efficienza
+    etf_leader_assoluto = top_settori[0][0]
+    gex_val, gex_regime, proxy_ticker = recupera_gex_settoriale(etf_leader_assoluto)
+    print(f"Leader GEX ({proxy_ticker}): {gex_val} - {gex_regime}")
+        
     for etf_leader, perf_leader in top_settori:
         tickers_da_analizzare = SETTORI[etf_leader]["tickers"]
-        print(f"Avvio analisi quantitativa oraria sui 10 ticker del settore {etf_leader}...")
+        print(f"Avvio analisi quantitativa oraria sui ticker del settore {etf_leader}...")
         
         for nome, ticker in tickers_da_analizzare.items():
             try:
@@ -343,7 +319,6 @@ def analizza_mercati():
 
                 print(f"[{nome}] P: {prezzo_attuale:.2f} | SMA50: {sma_50:.2f} | Vol: {volume_attuale} (Media: {media_volume:.0f}) | ATR: {atr_14:.2f}")
 
-                # --- 1. CERCHIAMO I 3 TRIGGER SUL GRAFICO ORARIO ---
                 if media_volume > 0 and volume_attuale >= (media_volume * soglia_breakout):
                     id_seg_temp = None
                     
@@ -372,7 +347,6 @@ def analizza_mercati():
                                 sma_200_daily = sum(c_daily[-200:]) / 200
                                 distanza_sma50 = abs(prezzo_attuale - sma_50_daily) / sma_50_daily
                                 
-                                # --- 2. LOGICA PULLBACK: Validazione sul Daily ---
                                 id_seg = None
                                 if var_perc >= 0 and prezzo_attuale > sma_200_daily and distanza_sma50 <= 0.03:
                                     id_seg = f"🎯 PULLBACK D1 + {id_seg_temp}"
@@ -391,11 +365,8 @@ def analizza_mercati():
                             print(f"  └─ 🛑 Errore dati Daily: {e}")
                             continue
 
-                          # Richiama il sistema a doppia fonte (YF + Finviz)
                         giorni_agli_utili = recupera_utili_sicuri(ticker, session)
 
-                            
-                        # --- 3. CALCOLO STOP E TARGET STRUTTURALI ---
                         if var_perc >= 0:
                             prezzo_ingresso = massimo_candela
                             ordine_txt = f"🟢 BUY STOP (Long): {prezzo_ingresso:.2f} $"
@@ -412,18 +383,17 @@ def analizza_mercati():
                         sma_txt = "SOPRA SMA50" if prezzo_attuale > sma_50 else "SOTTO SMA50"
                         molt_vol = volume_attuale / media_volume
 
+                        # Passiamo i parametri aggiornati alla AI
                         commento_ai = chiedi_analisi_ai(
-                        ticker=nome, id_seg=id_seg, prezzo=prezzo_attuale, var_perc=var_perc, 
-                        vol_molt=molt_vol, trend_txt=f"{sma_txt} ({trend_txt})", atr=atr_14, 
-                        corpo=corpo_candela, dist_max=distanza_massimo_perc, dist_min=distanza_minimo_perc, 
-                        giorni_utili=giorni_agli_utili
+                            ticker=nome, id_seg=id_seg, prezzo=prezzo_attuale, var_perc=var_perc, 
+                            vol_molt=molt_vol, trend_txt=f"{sma_txt} ({trend_txt})", atr=atr_14, 
+                            corpo=corpo_candela, dist_max=distanza_massimo_perc, dist_min=distanza_minimo_perc, 
+                            giorni_utili=giorni_agli_utili, gex_val=gex_val, gex_regime=gex_regime, proxy_ticker=proxy_ticker
                         )
 
-                        # --- NUOVA GESTIONE DEL MESSAGGIO (LONG vs SHORT) ---
                         if var_perc >= 0:
-                            # Setup LONG (Eseguibile per portafogli Cash)
                             msg = (f"🚀 {id_seg}: {nome.upper()}\n"
-                               f"🌐 SPX GEX: {gex_val} ({'🟢' if gex_val > 0 else '🔴'} Regime: {gex_regime.split(' ')[0]})\n"
+                               f"👑 LEADER GEX ({proxy_ticker}): {gex_val} M ({'🟢' if gex_val > 0 else '🔴'} {gex_regime.split(' ')[0]})\n"
                                f"📊 Rotazione: {SETTORI[etf_leader]['nome_settore']}\n"
                                f"Contesto: {sma_txt} | {trend_txt}\n"
                                f"Prezzo Chiusura: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
@@ -436,8 +406,8 @@ def analizza_mercati():
                                f"------------------------\n"
                                f"🤖 ANALISI:\n{commento_ai}")
                         else:
-                            # Setup SHORT (Avviso blocco operativo)
                             msg = (f"🩸 {id_seg}: {nome.upper()}\n"
+                                   f"👑 LEADER GEX ({proxy_ticker}): {gex_val} M ({'🟢' if gex_val > 0 else '🔴'} {gex_regime.split(' ')[0]})\n"
                                    f"📊 Rotazione: {SETTORI[etf_leader]['nome_settore']}\n"
                                    f"Contesto: {sma_txt} | {trend_txt}\n"
                                    f"Prezzo Chiusura: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
@@ -452,7 +422,6 @@ def analizza_mercati():
                         
                         invia_notifica(msg)
 
-                    
             except Exception as e:
                 print(f"Errore su {nome}: {e}")
             time.sleep(random.uniform(1.5, 3.0))
