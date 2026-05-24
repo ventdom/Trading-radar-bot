@@ -232,7 +232,7 @@ def recupera_gex_sp500():
 
     # --- 2. CHIAMATA API (Solo 1 volta al giorno) ---
     print("🔄 Nessuna cache valida per oggi. Richiesta GEX a FlashAlpha in corso...")
-    url_flashalpha = "https://lab.flashalpha.com/v1/gex?ticker=SPX"
+    url_flashalpha = "https://lab.flashalpha.com/v1/exposure/gex/SPX"
     headers = {"X-Api-Key": FLASHALPHA_API_KEY}
     
     try:
@@ -240,7 +240,7 @@ def recupera_gex_sp500():
         response.raise_for_status()
         dati = response.json()
         
-        gex_value = dati.get("gex_absolute", 0) 
+        gex_value = dati.get("net_gex", 0) 
         gex_regime = "POSITIVO (Bassa Volatilità/Mean Reversion)" if gex_value > 0 else "NEGATIVO (Alta Volatilità/Trend Esteso)"
         
         # --- 3. SALVATAGGIO NELLA CACHE ---
