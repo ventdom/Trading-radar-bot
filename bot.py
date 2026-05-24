@@ -103,17 +103,18 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
     
     prompt = (
         f"Sei un Risk Manager e consulente di Swing Trading quantitativo (no leva, hold 1-2 settimane). "
-        f"Oggi è {giorno}, ore {ora_utc} UTC. (Wall Street apre alle 13:30 e chiude alle 20:00 UTC). "
+        f"Oggi è {giorno}, ore {ora_utc} UTC.\n"
+        f"Contesto Macro (S&P500): Il Gamma Exposure (GEX) è {gex_val}M, Regime: {gex_regime}. "
+        f"Se il GEX è Positivo, prediligi prese di beneficio rapide sulle resistenze. Se Negativo, tollera volatilità e allarga gli stop.\n\n"
         f"Valuta questo segnale su {ticker}:\n"
         f"- Segnale: {id_seg} a {prezzo:.2f}$ ({var_perc:+.2f}% oggi)\n"
         f"- Volume: {vol_molt:.1f}x la media\n"
         f"- Trend: {trend_txt}\n"
         f"- Volatilità: Corpo candela {corpo:.2f}$ (Media ATR {atr:.2f}$)\n"
-        f"- Struttura Grafica: Distanza dal Massimo Mensile (Resistenza) {dist_max:.1f}%, dal Minimo (Supporto) {dist_min:.1f}%.\n"
-        f"- Rischio Trimestrale: Mancano {giorni_utili} giorni alla pubblicazione degli utili.\n\n"
-        f"Scrivi un breve e tagliente commento operativo (massimo 3 frasi). "
-        f"Valuta il Rischio/Rendimento basandoti sulle resistenze. Usa giorno e ora per filtrare le false partenze o la FOMO. "
-        f"Se mancano meno di 7 giorni agli utili (earnings), blocca categoricamente l'ingresso per rischio crollo."
+        f"- Struttura Grafica: Distanza dal Massimo Mensile {dist_max:.1f}%, dal Minimo {dist_min:.1f}%.\n"
+        f"- Utili: Mancano {giorni_utili} giorni.\n\n"
+        f"Scrivi un commento operativo (max 3 frasi). Correla il setup del ticker al regime GEX attuale per validare il Rischio/Rendimento. "
+        f"Se mancano meno di 7 giorni agli utili, blocca categoricamente l'ingresso."
     )
     
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
@@ -266,6 +267,10 @@ def recupera_gex_sp500():
 def analizza_mercati():
     session = requests.Session()
     session.headers.update({'User-Agent': 'Mozilla/5.0'})
+
+     # 1. Recupero GEX a livello globale
+    gex_val, gex_regime = recupera_gex_sp500()
+    print(f"Market Regime GEX: {gex_val} - {gex_regime}")
     
     top_settori = identifica_settori_migliori(session)
     if not top_settori:
@@ -408,18 +413,18 @@ def analizza_mercati():
                         if var_perc >= 0:
                             # Setup LONG (Eseguibile per portafogli Cash)
                             msg = (f"🚀 {id_seg}: {nome.upper()}\n"
-                                   f"📊 Rotazione: {SETTORI[etf_leader]['nome_settore']}\n"
-                                   f"Contesto: {sma_txt} | {trend_txt}\n"
-                                   f"Prezzo Chiusura: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
-                                   f"Volume: {molt_vol:.1f}x media\n"
-                                   f"Volatilità: Corpo {corpo_candela:.2f}$ (ATR {atr_14:.2f}$)\n"
-                                   f"------------------------\n"
-                                   f"⏳ INGRESSO IN CONFERMA:\n"
-                                   f"{ordine_txt}\n"
-                                   f"🎯 TARGET NETTO: {tp:.2f} $\n"
-                                   f"🛑 STOP LOSS STRUTTURALE: {sl:.2f} $\n"
-                                   f"------------------------\n"
-                                   f"🤖 ANALISI DELL'ESPERTO:\n{commento_ai}")
+                               f"🌐 SPX GEX: {gex_val} ({'🟢' if gex_val > 0 else '🔴'} Regime: {gex_regime.split(' ')[0]})\n"
+                               f"📊 Rotazione: {SETTORI[etf_leader]['nome_settore']}\n"
+                               f"Contesto: {sma_txt} | {trend_txt}\n"
+                               f"Prezzo Chiusura: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
+                               f"Volume: {molt_vol:.1f}x media\n"
+                               f"------------------------\n"
+                               f"⏳ INGRESSO IN CONFERMA:\n"
+                               f"{ordine_txt}\n"
+                               f"🎯 TARGET NETTO: {tp:.2f} $\n"
+                               f"🛑 STOP LOSS STRUTTURALE: {sl:.2f} $\n"
+                               f"------------------------\n"
+                               f"🤖 ANALISI:\n{commento_ai}")
                         else:
                             # Setup SHORT (Avviso blocco operativo)
                             msg = (f"🩸 {id_seg}: {nome.upper()}\n"
