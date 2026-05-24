@@ -3,7 +3,7 @@ import requests
 import json
 import time
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 import re
 
@@ -198,7 +198,19 @@ def recupera_gex_settoriale(etf_leader):
     """Recupera il GEX del Proxy di Settore: usa la cache se valida, altrimenti API."""
     proxy_ticker = PROXY_SETTORI.get(etf_leader, "AAPL")
     cache_file = "gex_cache.json"
-    oggi_str = datetime.utcnow().strftime("%Y-%m-%d")
+    
+    oggi = datetime.utcnow()
+    oggi_str = oggi.strftime("%Y-%m-%d")
+    
+    # --- CALCOLO PROSSIMA SCADENZA OPZIONI (VENERDÌ) ---
+    # weekday(): 0=Lunedì, 4=Venerdì, 6=Domenica.
+    giorni_al_venerdi = (4 - oggi.weekday()) % 7
+    # Se è venerdì sera a mercati chiusi (dopo le 20 UTC), puntiamo al venerdì della settimana successiva
+    if giorni_al_venerdi == 0 and oggi.hour >= 20:
+        giorni_al_venerdi = 7
+        
+    prossimo_venerdi = oggi + timedelta(days=giorni_al_venerdi)
+    scadenza_opzioni = prossimo_venerdi.strftime("%Y-%m-%d")
     
     if os.path.exists(cache_file):
         try:
@@ -210,8 +222,10 @@ def recupera_gex_settoriale(etf_leader):
         except Exception as e:
             print(f"⚠️ Errore cache GEX: {e}")
 
-    print(f"🔄 Nessuna cache per oggi. Richiesta GEX {proxy_ticker} a FlashAlpha...")
-    url_flashalpha = f"https://lab.flashalpha.com/v1/exposure/gex/{proxy_ticker}"
+    print(f"🔄 Nessuna cache per oggi. Richiesta GEX {proxy_ticker} (Scadenza: {scadenza_opzioni}) a FlashAlpha...")
+    
+    # --- NUOVO URL CON IL PARAMETRO EXPIRATION ---
+    url_flashalpha = f"https://lab.flashalpha.com/v1/exposure/gex/{proxy_ticker}?expiration={scadenza_opzioni}"
     
     headers = {
         "X-Api-Key": FLASHALPHA_API_KEY.strip(),
