@@ -11,6 +11,7 @@ import re
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["CHAT_ID"]
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"] 
+FLASHALPHA_API_KEY = os.environ["FLASHALPHA_API_KEY"] # <-- Nuovo segreto per il GEX
 
 # --- 2. IL MOTORE DI ROTAZIONE SETTORIALE (6 Settori, 15 Ticker l'uno con 2 IPO/High-Beta) ---
 SETTORI = {
