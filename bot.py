@@ -232,7 +232,7 @@ def recupera_gex_sp500():
 
     # --- 2. CHIAMATA API (Solo 1 volta al giorno) ---
     print("🔄 Nessuna cache valida per oggi. Richiesta GEX a FlashAlpha in corso...")
-    url_flashalpha = "https://lab.flashalpha.com/v1/exposure/gex/SPX"
+    url_flashalpha = "https://lab.flashalpha.com/v1/exposure/gex/SPY"
     headers = {"X-Api-Key": FLASHALPHA_API_KEY}
     
     try:
