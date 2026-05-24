@@ -419,11 +419,11 @@ def analizza_mercati():
                                 distanza_sma50 = abs(prezzo_attuale - sma_50_daily) / sma_50_daily
                                 
                                 id_seg = None
-                                if var_perc >= 0 and prezzo_attuale > sma_200_daily and distanza_sma50 <= 0.03:
+                                if var_perc >= 0 and prezzo_attuale > sma_200_daily and distanza_sma50 <= 0.08:
                                     id_seg = f"🎯 PULLBACK D1 + {id_seg_temp}"
                                     sl_strutturale = min(l_daily[-10:]) - (0.2 * atr_14) 
                                     tp_strutturale = massimo_mensile
-                                elif var_perc < 0 and prezzo_attuale < sma_200_daily and distanza_sma50 <= 0.03:
+                                elif var_perc < 0 and prezzo_attuale < sma_200_daily and distanza_sma50 <= 0.08:
                                     id_seg = f"🎯 PULLBACK D1 + {id_seg_temp}"
                                     sl_strutturale = max(h_daily[-10:]) + 0.10 
                                     tp_strutturale = minimo_mensile
