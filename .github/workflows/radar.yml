@@ -25,4 +25,13 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} 
+          FLASHALPHA_API_KEY: ${{ secrets.FLASHALPHA_API_KEY }}
         run: python bot.py
+
+        
+   # --- NUOVO BLOCCO PER LA CACHE ---
+      - name: Salva Cache GEX nel Repository
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "🤖 Update GEX cache [skip ci]"
+          file_pattern: 'gex_cache.json'
