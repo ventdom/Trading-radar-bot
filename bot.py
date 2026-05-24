@@ -91,7 +91,7 @@ def invia_notifica(messaggio, tentativi=3):
         except Exception:
             time.sleep(2)
 
-def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr, corpo, dist_max, dist_min, giorni_utili, gex_val, gex_regime, proxy_ticker, vix_ratio, vix_stato):
+def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr, corpo, dist_max, dist_min, giorni_utili, gex_val, gex_regime, proxy_ticker, vix_ratio, vix_stato, dix_val, dix_stato):
     url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     giorno = datetime.utcnow().strftime("%A")
     ora_utc = datetime.utcnow().strftime("%H:%M")
@@ -101,8 +101,10 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
         f"Oggi è {giorno}, ore {ora_utc} UTC.\n"
         f"CONTESTO MACRO (VIX Term Structure): Il rapporto VIX/VIX3M è {vix_ratio:.2f} ({vix_stato}). "
         f"Se in Contango (< 1), il mercato prezza normalità. Se in Backwardation (> 1), le istituzioni prezzano panico imminente.\n"
+        f"CONTESTO MACRO (Dark Pool Index): Il DIX è al {dix_val:.1f}% ({dix_stato}). "
+        f"Se in Accumulo (>45%), le istituzioni (Smart Money) stanno comprando pesantemente fuori mercato. Se in Distribuzione (<40%), non stanno difendendo i prezzi.\n"
         f"CONTESTO SETTORIALE (Leader GEX): L'Alpha Proxy del settore è {proxy_ticker}. Il suo Gamma Exposure (GEX) è {gex_val}M, Regime: {gex_regime}.\n"
-        f"Usa questi dati: avvisa se la VIX Term Structure indica pericolo, e valuta se il GEX del leader supporta (Positivo) o indebolisce (Negativo) la rotazione settoriale.\n\n"
+        f"Usa questi dati: avvisa se VIX o DIX indicano pericolo macro, e valuta se il GEX del leader supporta (Positivo) o indebolisce (Negativo) il trade.\n\n"
         f"Valuta questo segnale su {ticker}:\n"
         f"- Segnale: {id_seg} a {prezzo:.2f}$ ({var_perc:+.2f}% oggi)\n"
         f"- Volume: {vol_molt:.1f}x la media\n"
@@ -110,7 +112,7 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
         f"- Volatilità: Corpo candela {corpo:.2f}$ (Media ATR {atr:.2f}$)\n"
         f"- Struttura Grafica: Distanza dal Massimo Mensile {dist_max:.1f}%, dal Minimo {dist_min:.1f}%.\n"
         f"- Utili: Mancano {giorni_utili} giorni.\n\n"
-        f"Scrivi un commento operativo (max 3 frasi). Correla il setup del ticker alla salute GEX del suo leader e allo stato del VIX per validare il Rischio/Rendimento. "
+        f"Scrivi un commento operativo (max 3 frasi). Correla il setup del ticker alla salute macro (VIX/DIX) e settoriale (GEX) per validare il R/R. "
         f"Se mancano meno di 7 giorni agli utili, blocca categoricamente l'ingresso."
     )
     
@@ -199,13 +201,11 @@ def identifica_settori_migliori(session):
 def recupera_vix_term_structure(session):
     """Calcola il rapporto tra VIX e VIX3M per identificare Backwardation o Contango."""
     try:
-        # Recupero VIX (30 giorni)
         url_vix = "https://query2.finance.yahoo.com/v8/finance/chart/^VIX?interval=1d&range=5d"
         resp_vix = session.get(url_vix, timeout=5).json()
         vix_close = [c for c in resp_vix['chart']['result'][0]['indicators']['quote'][0]['close'] if c is not None]
         vix_attuale = vix_close[-1]
 
-        # Recupero VIX3M (3 mesi)
         url_vix3m = "https://query2.finance.yahoo.com/v8/finance/chart/^VIX3M?interval=1d&range=5d"
         resp_vix3m = session.get(url_vix3m, timeout=5).json()
         vix3m_close = [c for c in resp_vix3m['chart']['result'][0]['indicators']['quote'][0]['close'] if c is not None]
@@ -218,6 +218,35 @@ def recupera_vix_term_structure(session):
     except Exception:
         return 0, 0, 0, "SCONOSCIUTO"
 
+def recupera_dix(session):
+    """Scarica il Dark Pool Index (DIX) ufficiale da SqueezeMetrics (Dati gratuiti)."""
+    url = "https://squeezemetrics.com/monitor/static/DIX.csv"
+    try:
+        headers_csv = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        response = session.get(url, headers=headers_csv, timeout=10)
+        
+        if response.status_code == 200:
+            lines = response.text.strip().split('\n')
+            headers = [h.strip().lower() for h in lines[0].split(',')]
+            
+            if 'dix' in headers:
+                dix_idx = headers.index('dix')
+                last_line = lines[-1].split(',')
+                dix_value = float(last_line[dix_idx]) * 100 
+                
+                if dix_value >= 45.0:
+                    stato = "ACCUMULO ISTITUZIONALE (Bullish)"
+                elif dix_value <= 40.0:
+                    stato = "DISTRIBUZIONE / PAURA (Bearish)"
+                else:
+                    stato = "NEUTRALE / NESSUN VANTAGGIO"
+                    
+                return dix_value, stato
+    except Exception as e:
+        print(f"Errore recupero DIX: {e}")
+        
+    return 0.0, "SCONOSCIUTO"
+
 def recupera_gex_settoriale(etf_leader):
     """Recupera il GEX del Proxy di Settore: usa la cache se valida, altrimenti API."""
     proxy_ticker = PROXY_SETTORI.get(etf_leader, "AAPL")
@@ -226,10 +255,7 @@ def recupera_gex_settoriale(etf_leader):
     oggi = datetime.utcnow()
     oggi_str = oggi.strftime("%Y-%m-%d")
     
-    # --- CALCOLO PROSSIMA SCADENZA OPZIONI (VENERDÌ) ---
-    # weekday(): 0=Lunedì, 4=Venerdì, 6=Domenica.
     giorni_al_venerdi = (4 - oggi.weekday()) % 7
-    # Se è venerdì sera a mercati chiusi (dopo le 20 UTC), puntiamo al venerdì della settimana successiva
     if giorni_al_venerdi == 0 and oggi.hour >= 20:
         giorni_al_venerdi = 7
         
@@ -248,7 +274,6 @@ def recupera_gex_settoriale(etf_leader):
 
     print(f"🔄 Nessuna cache per oggi. Richiesta GEX {proxy_ticker} (Scadenza: {scadenza_opzioni}) a FlashAlpha...")
     
-    # --- NUOVO URL CON IL PARAMETRO EXPIRATION ---
     url_flashalpha = f"https://lab.flashalpha.com/v1/exposure/gex/{proxy_ticker}?expiration={scadenza_opzioni}"
     
     headers = {
@@ -305,7 +330,11 @@ def analizza_mercati():
     vix_val, vix3m_val, vix_ratio, vix_stato = recupera_vix_term_structure(session)
     print(f"VIX Term Structure: {vix_ratio:.2f} - {vix_stato}")
 
-    # Calcolo del GEX solo sul settore LEADER assoluto (top_settori[0]) per massimizzare l'efficienza
+    # Calcolo Dark Pool Index (DIX)
+    dix_val, dix_stato = recupera_dix(session)
+    print(f"Dark Pool Index (DIX): {dix_val:.1f}% - {dix_stato}")
+
+    # Calcolo del GEX sul settore LEADER assoluto
     etf_leader_assoluto = top_settori[0][0]
     gex_val, gex_regime, proxy_ticker = recupera_gex_settoriale(etf_leader_assoluto)
     print(f"Leader GEX ({proxy_ticker}): {gex_val} - {gex_regime}")
@@ -425,19 +454,24 @@ def analizza_mercati():
                         sma_txt = "SOPRA SMA50" if prezzo_attuale > sma_50 else "SOTTO SMA50"
                         molt_vol = volume_attuale / media_volume
 
-                        # Passiamo i nuovi parametri VIX alla AI
+                        # Passiamo anche il DIX alla AI
                         commento_ai = chiedi_analisi_ai(
                             ticker=nome, id_seg=id_seg, prezzo=prezzo_attuale, var_perc=var_perc, 
                             vol_molt=molt_vol, trend_txt=f"{sma_txt} ({trend_txt})", atr=atr_14, 
                             corpo=corpo_candela, dist_max=distanza_massimo_perc, dist_min=distanza_minimo_perc, 
                             giorni_utili=giorni_agli_utili, gex_val=gex_val, gex_regime=gex_regime, 
-                            proxy_ticker=proxy_ticker, vix_ratio=vix_ratio, vix_stato=vix_stato
+                            proxy_ticker=proxy_ticker, vix_ratio=vix_ratio, vix_stato=vix_stato, 
+                            dix_val=dix_val, dix_stato=dix_stato
                         )
+
+                        # Emoji dinamica per il DIX (Gialla se neutrale)
+                        dix_emoji = '🟢' if dix_val >= 45.0 else '🔴' if dix_val <= 40.0 else '🟡'
 
                         if var_perc >= 0:
                             msg = (f"🚀 {id_seg}: {nome.upper()}\n"
                                f"👑 LEADER GEX ({proxy_ticker}): {gex_val} M ({'🟢' if gex_val > 0 else '🔴'} {gex_regime.split(' ')[0]})\n"
                                f"📉 VIX TERM STR: {vix_ratio:.2f} ({'🔴' if vix_ratio > 1 else '🟢'} {vix_stato.split(' ')[0]})\n"
+                               f"🐳 DARK POOL (DIX): {dix_val:.1f}% ({dix_emoji} {dix_stato.split(' ')[0]})\n"
                                f"📊 Rotazione: {SETTORI[etf_leader]['nome_settore']}\n"
                                f"Contesto: {sma_txt} | {trend_txt}\n"
                                f"Prezzo Chiusura: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
@@ -453,6 +487,7 @@ def analizza_mercati():
                             msg = (f"🩸 {id_seg}: {nome.upper()}\n"
                                    f"👑 LEADER GEX ({proxy_ticker}): {gex_val} M ({'🟢' if gex_val > 0 else '🔴'} {gex_regime.split(' ')[0]})\n"
                                    f"📉 VIX TERM STR: {vix_ratio:.2f} ({'🔴' if vix_ratio > 1 else '🟢'} {vix_stato.split(' ')[0]})\n"
+                                   f"🐳 DARK POOL (DIX): {dix_val:.1f}% ({dix_emoji} {dix_stato.split(' ')[0]})\n"
                                    f"📊 Rotazione: {SETTORI[etf_leader]['nome_settore']}\n"
                                    f"Contesto: {sma_txt} | {trend_txt}\n"
                                    f"Prezzo Chiusura: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
