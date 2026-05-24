@@ -233,11 +233,21 @@ def recupera_gex_sp500():
     # --- 2. CHIAMATA API (Solo 1 volta al giorno) ---
     print("🔄 Nessuna cache valida per oggi. Richiesta GEX a FlashAlpha in corso...")
     url_flashalpha = "https://lab.flashalpha.com/v1/exposure/gex/SPY"
-    headers = {"X-Api-Key": FLASHALPHA_API_KEY}
+    
+    # 1. Aggiungiamo User-Agent per ingannare i filtri anti-bot e puliamo la chiave
+    headers = {
+        "X-Api-Key": FLASHALPHA_API_KEY.strip(),
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
     
     try:
         response = requests.get(url_flashalpha, headers=headers, timeout=10)
-        response.raise_for_status()
+        
+        # 2. DEBUGGING AVANZATO: Intercettiamo il payload di errore prima che Python crashi
+        if response.status_code != 200:
+            print(f"🛑 ERRORE SERVER {response.status_code}")
+            print(f"💬 Risposta ufficiale di FlashAlpha: {response.text}")
+            response.raise_for_status()
         dati = response.json()
         
         gex_value = dati.get("net_gex", 0) 
