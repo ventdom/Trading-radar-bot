@@ -24,60 +24,12 @@ PROXY_SETTORI = {
 }
 
 SETTORI = {
-    "XLK": { # TECH & SOFTWARE
-        "nome_settore": "💻 TECH / SOFTWARE",
-        "tickers": {
-            "Microsoft": "MSFT", "Apple": "AAPL", "Salesforce": "CRM", "Adobe": "ADBE", 
-            "ServiceNow": "NOW", "Oracle": "ORCL", "Palo Alto": "PANW", "CrowdStrike": "CRWD", 
-            "Palantir": "PLTR", "Meta": "META", "Netflix": "NFLX", "Snowflake": "SNOW", "Datadog": "DDOG",
-            "Reddit": "RDDT", "Rubrik": "RBRK" 
-        }
-    },
-    "SMH": { # AI & SEMICONDUTTORI
-        "nome_settore": "🧠 AI & CHIP",
-        "tickers": {
-            "Nvidia": "NVDA", "AMD": "AMD", "TSMC": "TSM", "ASML": "ASML", 
-            "Broadcom": "AVGO", "Qualcomm": "QCOM", "Applied Mat": "AMAT", "Intel": "INTC", 
-            "Micron": "MU", "Texas Instr": "TXN", "Marvell": "MRVL", "Monolithic": "MPWR", "ARM": "ARM",
-            "Astera Labs": "ALAB", "CoreWeave": "CRWV" 
-        }
-    },
-    "XLF": { # BANCHE E FINANZA
-        "nome_settore": "🏦 FINANZA",
-        "tickers": {
-            "JPMorgan": "JPM", "BofA": "BAC", "Wells Fargo": "WFC", "Citigroup": "C", 
-            "Goldman Sachs": "GS", "Morgan Stanley": "MS", "Visa": "V", "Mastercard": "MA", 
-            "Coinbase": "COIN", "Robinhood": "HOOD", "SoFi": "SOFI", "Upstart": "UPST", "Affirm": "AFRM",
-            "Bowhead Specialty": "BOW", "MoneyLion": "MNY" 
-        }
-    },
-    "XLE": { # ENERGIA E OIL
-        "nome_settore": "🛢️ ENERGIA",
-        "tickers": {
-            "Exxon": "XOM", "Chevron": "CVX", "ConocoPhillips": "COP", "Schlumberger": "SLB", 
-            "EOG Resources": "EOG", "Marathon": "MPC", "Occidental": "OXY", "Valero": "VLO", 
-            "Williams": "WMB", "Halliburton": "HAL", "Pioneer": "PXD", "Hess": "HES", "Baker Hughes": "BKR",
-            "BKV Corp": "BKV", "TXO Partners": "TXO" 
-        }
-    },
-    "ITA": { # DIFESA E AEROSPAZIO
-        "nome_settore": "🪖 DIFESA E AEROSPAZIO",
-        "tickers": {
-            "Lockheed": "LMT", "RTX Corp": "RTX", "Northrop": "NOC", "Gen Dynamics": "GD", 
-            "Boeing": "BA", "TransDigm": "TDG", "Heico": "HEI", "L3Harris": "LHX", 
-            "Textron": "TXT", "Howmet": "HWM", "Spirit Aero": "SPR", "Woodward": "WWD", "Moog": "MOG-A",
-            "Loar Group": "LOAR", "AST SpaceMobile": "ASTS" 
-        }
-    },
-    "XBI": { # BIOTECH & HEALTH
-        "nome_settore": "🧬 BIOTECH & HEALTH",
-        "tickers": {
-            "Eli Lilly": "LLY", "Novo Nordisk": "NVO", "UnitedHealth": "UNH", "J&J": "JNJ", 
-            "Merck": "MRK", "AbbVie": "ABBV", "Pfizer": "PFE", "Vertex": "VRTX", 
-            "Amgen": "AMGN", "Gilead": "GILD", "Regeneron": "REGN", "Intuitive Surg": "ISRG", "CRISPR": "CRSP",
-            "CG Oncology": "CGON", "Kyverna": "KYTX" 
-        }
-    }
+    "XLK": {"nome_settore": "💻 TECH / SOFTWARE", "tickers": {"Microsoft": "MSFT", "Apple": "AAPL", "Salesforce": "CRM", "Adobe": "ADBE", "ServiceNow": "NOW", "Oracle": "ORCL", "Palo Alto": "PANW", "CrowdStrike": "CRWD", "Palantir": "PLTR", "Meta": "META", "Netflix": "NFLX", "Snowflake": "SNOW", "Datadog": "DDOG", "Reddit": "RDDT", "Rubrik": "RBRK"}},
+    "SMH": {"nome_settore": "🧠 AI & CHIP", "tickers": {"Nvidia": "NVDA", "AMD": "AMD", "TSMC": "TSM", "ASML": "ASML", "Broadcom": "AVGO", "Qualcomm": "QCOM", "Applied Mat": "AMAT", "Intel": "INTC", "Micron": "MU", "Texas Instr": "TXN", "Marvell": "MRVL", "Monolithic": "MPWR", "ARM": "ARM", "Astera Labs": "ALAB", "CoreWeave": "CRWV"}},
+    "XLF": {"nome_settore": "🏦 FINANZA", "tickers": {"JPMorgan": "JPM", "BofA": "BAC", "Wells Fargo": "WFC", "Citigroup": "C", "Goldman Sachs": "GS", "Morgan Stanley": "MS", "Visa": "V", "Mastercard": "MA", "Coinbase": "COIN", "Robinhood": "HOOD", "SoFi": "SOFI", "Upstart": "UPST", "Affirm": "AFRM", "Bowhead Specialty": "BOW", "MoneyLion": "MNY"}},
+    "XLE": {"nome_settore": "🛢️ ENERGIA", "tickers": {"Exxon": "XOM", "Chevron": "CVX", "ConocoPhillips": "COP", "Schlumberger": "SLB", "EOG Resources": "EOG", "Marathon": "MPC", "Occidental": "OXY", "Valero": "VLO", "Williams": "WMB", "Halliburton": "HAL", "Pioneer": "PXD", "Hess": "HES", "Baker Hughes": "BKR", "BKV Corp": "BKV", "TXO Partners": "TXO"}},
+    "ITA": {"nome_settore": "🪖 DIFESA E AEROSPAZIO", "tickers": {"Lockheed": "LMT", "RTX Corp": "RTX", "Northrop": "NOC", "Gen Dynamics": "GD", "Boeing": "BA", "TransDigm": "TDG", "Heico": "HEI", "L3Harris": "LHX", "Textron": "TXT", "Howmet": "HWM", "Spirit Aero": "SPR", "Woodward": "WWD", "Moog": "MOG-A", "Loar Group": "LOAR", "AST SpaceMobile": "ASTS"}},
+    "XBI": {"nome_settore": "🧬 BIOTECH & HEALTH", "tickers": {"Eli Lilly": "LLY", "Novo Nordisk": "NVO", "UnitedHealth": "UNH", "J&J": "JNJ", "Merck": "MRK", "AbbVie": "ABBV", "Pfizer": "PFE", "Vertex": "VRTX", "Amgen": "AMGN", "Gilead": "GILD", "Regeneron": "REGN", "Intuitive Surg": "ISRG", "CRISPR": "CRSP", "CG Oncology": "CGON", "Kyverna": "KYTX"}}
 }
 
 def invia_notifica(messaggio, tentativi=3):
@@ -91,42 +43,23 @@ def invia_notifica(messaggio, tentativi=3):
         except Exception:
             time.sleep(2)
 
-def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr, corpo, dist_max, dist_min, giorni_utili, gex_val, gex_regime, proxy_ticker, vix_ratio, vix_stato, dix_val, dix_stato):
+def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr, corpo, dist_max, dist_min, giorni_utili, gex_val, gex_regime, proxy_ticker, vix_ratio, vix_stato, dix_val, dix_stato, forma_daily):
     url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     giorno = datetime.utcnow().strftime("%A")
     ora_utc = datetime.utcnow().strftime("%H:%M")
     
+    # PROMPT SINTETICO E SEZIONE INTERNET FEELINGS
     prompt = (
-        f"Sei un Risk Manager e consulente di Swing Trading quantitativo (no leva, hold 1-2 settimane). "
-        f"Oggi è {giorno}, ore {ora_utc} UTC.\n\n"
-        f"DATI MACRO E SETTORIALI:\n"
-        f"- VIX Term Structure: {vix_ratio:.2f} ({vix_stato}). Contango (<1) = Sano. Backwardation (>1) = Paura/Pericolo.\n"
-        f"- Dark Pool Index (DIX): {dix_val:.1f}% ({dix_stato}). Accumulo (>45%) = Vantaggio. Distribuzione (<40%) = Vulnerabilità.\n"
-        f"- Leader GEX ({proxy_ticker}): {gex_val}M ({gex_regime}). Positivo = Supporto. Negativo = Alta Volatilità/Pericolo.\n\n"
-        f"DATI DEL SEGNALE SU {ticker}:\n"
-        f"- Segnale: {id_seg} a {prezzo:.2f}$ ({var_perc:+.2f}% oggi)\n"
-        f"- Volume: {vol_molt:.1f}x la media\n"
-        f"- Trend: {trend_txt}\n"
-        f"- Volatilità: Corpo {corpo:.2f}$ (ATR {atr:.2f}$)\n"
-        f"- Grafico: Distanza Massimo Mensile {dist_max:.1f}%, Minimo {dist_min:.1f}%.\n"
-        f"- Utili: Mancano {giorni_utili} giorni (BLOCCO TASSATIVO SE MANCANO MENO DI 7 GIORNI).\n\n"
-        f"REGOLE DI FORMATTAZIONE OBBLIGATORIE:\n"
-        f"Non aggiungere convenevoli. Rispondi ESATTAMENTE copiando e riempiendo il seguente template Markdown:\n\n"
-        f"**Analisi Contesto Macro e Settoriale:**\n\n"
-        f"* **VIX Term Structure ({vix_ratio:.2f}):** [Breve analisi quantitativa]. **[Conclusione netta in grassetto, es: Nessun pericolo macro]**\n"
-        f"* **Dark Pool Index ({dix_val:.1f}%):** [Breve analisi quantitativa]. **[Conclusione netta in grassetto]**\n"
-        f"* **Gamma Exposure ({proxy_ticker} GEX {gex_val}M):** [Breve analisi dell'impatto sul settore]. **[Conclusione netta in grassetto]**\n\n"
-        f"**Valutazione Segnale {ticker}:**\n\n"
-        f"Il segnale su {ticker} è [Aggettivo valutativo]:\n"
-        f"* **Segnale ({id_seg}):** [Analisi del tipo di azione dei prezzi]\n"
-        f"* **Volume:** {vol_molt:.1f}x la media [Convalida o smentita istituzionale]\n"
-        f"* **Trend:** {trend_txt}, [Impatto sul Rischio]\n"
-        f"* **Volatilità:** Corpo di {corpo:.2f}$ rispetto ad ATR di {atr:.2f}$ [Analisi spinta direzionale]\n"
-        f"* **Struttura Grafica:** [Analisi resistenze e supporti]\n"
-        f"* **Utili:** A {giorni_utili} giorni di distanza. [Definisci se è tradabile o se scatta il blocco].\n\n"
-        f"---\n\n"
-        f"**Commento Operativo:**\n\n"
-        f"[Scrivi un unico paragrafo riassuntivo (max 3 frasi) in cui incroci il macro, il GEX e l'azione dei prezzi. Esprimi un giudizio finale sul Rischio/Rendimento ed emetti il verdetto definitivo (se tradabile o se bloccato causa utili imminenti o rischio macro sistemico).]"
+        f"Sei un Risk Manager di Swing Trading (hold 1-2 settimane). "
+        f"Analisi estremamente sintetica (max 2 righe a sezione). Oggi è {giorno}, ore {ora_utc} UTC.\n\n"
+        f"DATI: Macro (VIX {vix_ratio:.2f} {vix_stato}), DIX ({dix_val:.1f}% {dix_stato}), GEX {proxy_ticker}: {gex_val}M.\n"
+        f"SETUP: {id_seg} su {ticker} | Prezzo: {prezzo:.2f}$ | RVOL: {vol_molt:.1f}x | Daily Live: {forma_daily}.\n\n"
+        f"FORMATTAZIONE OBBLIGATORIA:\n"
+        f"**Macro/Settore:** [Analisi sintetica]. **[Conclusione]**\n"
+        f"**Valutazione Setup:** [Analisi tecnica sintetica basata su trend {trend_txt} e ATR {atr:.2f}]. **[Conclusione]**\n"
+        f"**Internet Feelings:** [Analisi del sentiment su X e news finanziarie dell'ultima settimana per {ticker}].\n"
+        f"**Utili:** {giorni_utili}.\n\n"
+        f"**Verdetto (Max 2 frasi):** [Giudizio finale se tradabile]."
     )
     
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
@@ -137,7 +70,7 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
         response.raise_for_status()
         return response.json()['candidates'][0]['content']['parts'][0]['text'].strip()
     except Exception:
-        return "Analisi AI temporaneamente non disponibile a causa di un timeout di rete."
+        return "Analisi AI temporaneamente non disponibile."
 
 def recupera_utili_sicuri(ticker, session):
     url_quote = f"https://query2.finance.yahoo.com/v7/finance/quote?symbols={ticker}"
@@ -146,7 +79,10 @@ def recupera_utili_sicuri(ticker, session):
         resp = session.get(url_quote, timeout=5).json()
         earnings_ts = resp.get("quoteResponse", {}).get("result", [{}])[0].get("earningsTimestamp")
         if earnings_ts:
-            return int((earnings_ts - time.time()) / 86400)
+            giorni = int((earnings_ts - time.time()) / 86400)
+            if 0 > giorni >= -300:
+                return "Già passati (Sicuro)"
+            return f"Mancano {giorni} giorni"
     except Exception:
         pass
         
@@ -171,32 +107,35 @@ def recupera_utili_sicuri(ticker, session):
                     if giorni_mancanti < -300: 
                         data_utili = data_utili.replace(year=anno_corrente + 1)
                         giorni_mancanti = (data_utili - datetime.utcnow()).days
-                    return giorni_mancanti
+                        return f"Mancano {giorni_mancanti} giorni"
+                    elif giorni_mancanti < 0:
+                        return "Già passati (Sicuro)"
+                    return f"Mancano {giorni_mancanti} giorni"
     except Exception:
         pass
         
-    return "Sconosciuti"
+    return "Dati Sconosciuti"
 
 def identifica_settori_migliori(session):
-    print("Analisi Rotazione Settoriale (Lettura chiusure giorno precedente)...")
+    print("Analisi Rotazione Settoriale (ROC a 10 Giorni)...")
     risultati_settori = []
     
     for etf in SETTORI.keys():
         try:
-            url = f"https://query2.finance.yahoo.com/v8/finance/chart/{etf}?interval=1d&range=5d"
+            url = f"https://query2.finance.yahoo.com/v8/finance/chart/{etf}?interval=1d&range=1mo"
             resp = session.get(url, timeout=5).json()
             chiusure = resp['chart']['result'][0]['indicators']['quote'][0]['close']
             
             chiusure = [c for c in chiusure if c is not None]
             
-            if len(chiusure) >= 3:
-                c_ieri = chiusure[-2]
-                c_altro_ieri = chiusure[-3]
+            if len(chiusure) >= 12:
+                c_attuale = chiusure[-1]
+                c_10_giorni_fa = chiusure[-11]
                 
-                perf = ((c_ieri - c_altro_ieri) / c_altro_ieri) * 100
-                print(f"ETF {etf} ({SETTORI[etf]['nome_settore']}): {perf:+.2f}%")
+                perf = ((c_attuale - c_10_giorni_fa) / c_10_giorni_fa) * 100
+                print(f"ETF {etf} ({SETTORI[etf]['nome_settore']}): ROC 10D {perf:+.2f}%")
                 risultati_settori.append((etf, perf))
-        except Exception:
+        except Exception as e:
             pass
         time.sleep(1)
         
@@ -204,7 +143,7 @@ def identifica_settori_migliori(session):
     top_3 = risultati_settori[:3] if len(risultati_settori) >= 3 else risultati_settori
     
     if top_3:
-        print("\n=> SETTORI LEADER IDENTIFICATI (Su base ieri):")
+        print("\n=> SETTORI LEADER IDENTIFICATI (Su base ROC 10D):")
         for etf, perf in top_3:
             print(f"   - {SETTORI[etf]['nome_settore']} ({etf}) con {perf:+.2f}%")
     print()
@@ -212,7 +151,6 @@ def identifica_settori_migliori(session):
     return top_3
 
 def recupera_vix_term_structure(session):
-    """Calcola il rapporto tra VIX e VIX3M per identificare Backwardation o Contango."""
     try:
         url_vix = "https://query2.finance.yahoo.com/v8/finance/chart/^VIX?interval=1d&range=5d"
         resp_vix = session.get(url_vix, timeout=5).json()
@@ -232,7 +170,6 @@ def recupera_vix_term_structure(session):
         return 0, 0, 0, "SCONOSCIUTO"
 
 def recupera_dix(session):
-    """Scarica il Dark Pool Index (DIX) ufficiale da SqueezeMetrics (Dati gratuiti)."""
     url = "https://squeezemetrics.com/monitor/static/DIX.csv"
     try:
         headers_csv = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
@@ -256,14 +193,13 @@ def recupera_dix(session):
                     
                 return dix_value, stato
     except Exception as e:
-        print(f"Errore recupero DIX: {e}")
+        pass
         
     return 0.0, "SCONOSCIUTO"
 
 def recupera_gex_settoriale(etf_leader):
-    """Recupera il GEX del Proxy di Settore: usa la cache se valida, altrimenti API."""
     proxy_ticker = PROXY_SETTORI.get(etf_leader, "AAPL")
-    cache_file = "gex_cache.json"
+    cache_file = f"gex_cache_{proxy_ticker}.json"
     
     oggi = datetime.utcnow()
     oggi_str = oggi.strftime("%Y-%m-%d")
@@ -280,48 +216,32 @@ def recupera_gex_settoriale(etf_leader):
             with open(cache_file, "r") as f:
                 cache = json.load(f)
                 if cache.get("data") == oggi_str and cache.get("ticker") == proxy_ticker:
-                    print(f"✅ GEX Proxy ({proxy_ticker}) recuperato da cache. Zero API consumate.")
+                    print(f"✅ GEX Proxy ({proxy_ticker}) recuperato da cache.")
                     return cache.get("gex_value"), cache.get("gex_regime"), proxy_ticker
-        except Exception as e:
-            print(f"⚠️ Errore cache GEX: {e}")
+        except Exception:
+            pass
 
-    print(f"🔄 Nessuna cache per oggi. Richiesta GEX {proxy_ticker} (Scadenza: {scadenza_opzioni}) a FlashAlpha...")
-    
+    print(f"🔄 Richiesta GEX {proxy_ticker} (Scadenza: {scadenza_opzioni}) a FlashAlpha...")
     url_flashalpha = f"https://lab.flashalpha.com/v1/exposure/gex/{proxy_ticker}?expiration={scadenza_opzioni}"
-    
-    headers = {
-        "X-Api-Key": FLASHALPHA_API_KEY.strip(),
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    }
+    headers = {"X-Api-Key": FLASHALPHA_API_KEY.strip(), "User-Agent": "Mozilla/5.0"}
     
     try:
         response = requests.get(url_flashalpha, headers=headers, timeout=10)
-        
-        if response.status_code != 200:
-            print(f"🛑 ERRORE SERVER {response.status_code}: {response.text}")
-            response.raise_for_status()
+        response.raise_for_status()
         dati = response.json()
         
         gex_value = dati.get("net_gex", 0) 
         gex_regime = "POSITIVO (Stabilità/Mean Reversion)" if gex_value > 0 else "NEGATIVO (Alta Volatilità/Trend Esteso)"
         
         with open(cache_file, "w") as f:
-            json.dump({
-                "data": oggi_str,
-                "ticker": proxy_ticker,
-                "gex_value": gex_value,
-                "gex_regime": gex_regime
-            }, f)
+            json.dump({"data": oggi_str, "ticker": proxy_ticker, "gex_value": gex_value, "gex_regime": gex_regime}, f)
             
-        print("💾 Cache GEX aggiornata e salvata con successo.")
         return gex_value, gex_regime, proxy_ticker
         
-    except Exception as e:
-        print(f"❌ Errore recupero GEX API: {e}")
+    except Exception:
         if os.path.exists(cache_file):
             with open(cache_file, "r") as f:
                 old_cache = json.load(f)
-                print("⚠️ Uso dati GEX in fallback.")
                 return old_cache.get("gex_value", 0), old_cache.get("gex_regime", "SCONOSCIUTO"), old_cache.get("ticker", proxy_ticker)
         return 0, "SCONOSCIUTO", proxy_ticker
 
@@ -331,30 +251,19 @@ def analizza_mercati():
 
     top_settori = identifica_settori_migliori(session)
     if not top_settori:
-        print("Errore nel recupero ETF. Esco.")
         return
         
     miglior_etf_assoluto, miglior_perf_assoluta = top_settori[0]
     if miglior_perf_assoluta < -0.5:
-        print("Il mercato sta crollando ovunque (Leader assoluto negativo). Pausa operativa per protezione capitale.")
+        print("Il mercato sta crollando ovunque. Pausa operativa.")
         return 
         
-    # Calcolo VIX Term Structure
     vix_val, vix3m_val, vix_ratio, vix_stato = recupera_vix_term_structure(session)
-    print(f"VIX Term Structure: {vix_ratio:.2f} - {vix_stato}")
-
-    # Calcolo Dark Pool Index (DIX)
     dix_val, dix_stato = recupera_dix(session)
-    print(f"Dark Pool Index (DIX): {dix_val:.1f}% - {dix_stato}")
 
-    # Calcolo del GEX sul settore LEADER assoluto
-    etf_leader_assoluto = top_settori[0][0]
-    gex_val, gex_regime, proxy_ticker = recupera_gex_settoriale(etf_leader_assoluto)
-    print(f"Leader GEX ({proxy_ticker}): {gex_val} - {gex_regime}")
-        
     for etf_leader, perf_leader in top_settori:
+        gex_val, gex_regime, proxy_ticker = recupera_gex_settoriale(etf_leader)
         tickers_da_analizzare = SETTORI[etf_leader]["tickers"]
-        print(f"Avvio analisi quantitativa oraria sui ticker del settore {etf_leader}...")
         
         for nome, ticker in tickers_da_analizzare.items():
             try:
@@ -367,12 +276,15 @@ def analizza_mercati():
                 
                 risultato = dati['chart']['result'][0]
                 quote = risultato['indicators']['quote'][0]
+                timestamps = risultato.get('timestamp', [])
                 
-                chiusure, aperture, volumi, massimi, minimi = [], [], [], [], []
+                chiusure, aperture, volumi, massimi, minimi, ts_validi = [], [], [], [], [], []
+                
                 for i in range(len(quote['close'])):
                     c, o, v, h, l = quote['close'][i], quote['open'][i], quote['volume'][i], quote['high'][i], quote['low'][i]
-                    if None not in (c, o, v, h, l):
-                        chiusure.append(c); aperture.append(o); volumi.append(v); massimi.append(h); minimi.append(l)
+                    ts = timestamps[i] if i < len(timestamps) else None
+                    if None not in (c, o, v, h, l, ts):
+                        chiusure.append(c); aperture.append(o); volumi.append(v); massimi.append(h); minimi.append(l); ts_validi.append(ts)
                 
                 if len(chiusure) < 52: continue
                 
@@ -381,8 +293,20 @@ def analizza_mercati():
                 massimo_candela = massimi[-2]  
                 minimo_candela = minimi[-2]    
                 volume_attuale = volumi[-2]
+                ts_attuale = ts_validi[-2]
                 
-                media_volume = sum(volumi[-22:-2]) / 20
+                ora_target = datetime.utcfromtimestamp(ts_attuale).hour
+                
+                volumi_stessa_ora = [
+                    volumi[i] for i in range(len(volumi) - 2) 
+                    if datetime.utcfromtimestamp(ts_validi[i]).hour == ora_target
+                ]
+                
+                if len(volumi_stessa_ora) > 0:
+                    media_volume = sum(volumi_stessa_ora) / len(volumi_stessa_ora)
+                else:
+                    media_volume = sum(volumi[-22:-2]) / 20 
+                
                 sma_50 = sum(chiusure[-51:-1]) / 50  
                 var_perc = ((prezzo_attuale - prezzo_apertura) / prezzo_apertura) * 100
                 corpo_candela = abs(prezzo_attuale - prezzo_apertura)
@@ -401,8 +325,6 @@ def analizza_mercati():
                 soglia_spinta = 1.8 + offset_apertura
                 soglia_assorbimento = 2.2 + offset_apertura
 
-                print(f"[{nome}] P: {prezzo_attuale:.2f} | SMA50: {sma_50:.2f} | Vol: {volume_attuale} (Media: {media_volume:.0f}) | ATR: {atr_14:.2f}")
-
                 if media_volume > 0 and volume_attuale >= (media_volume * soglia_breakout):
                     id_seg_temp = None
                     
@@ -420,13 +342,24 @@ def analizza_mercati():
                             resp_daily = session.get(url_daily, timeout=5)
                             quote_daily = resp_daily.json()['chart']['result'][0]['indicators']['quote'][0]
                             
-                            valid_daily = [(c, l, h) for c, l, h in zip(quote_daily['close'], quote_daily['low'], quote_daily['high']) if c is not None and l is not None and h is not None]
+                            # RISOLUZIONE: Estrazione per calcolo "Cumulata" (Includo l'Apertura Daily)
+                            valid_daily = [(c, l, h, o) for c, l, h, o in zip(quote_daily['close'], quote_daily['low'], quote_daily['high'], quote_daily['open']) if None not in (c, l, h, o)]
                             
                             if len(valid_daily) >= 200:
                                 c_daily = [v[0] for v in valid_daily]
                                 l_daily = [v[1] for v in valid_daily]
                                 h_daily = [v[2] for v in valid_daily]
                                 
+                                # CALCOLO CANDELA GIORNALIERA CUMULATA (LIVE)
+                                c_live, l_live, h_live, o_live = valid_daily[-1]
+                                range_live = h_live - l_live
+                                if range_live > 0:
+                                    pos_chiusura_live = ((c_live - l_live) / range_live) * 100
+                                else:
+                                    pos_chiusura_live = 50.0
+                                
+                                forma_daily = f"Open {o_live:.2f}$ | High {h_live:.2f}$ | Low {l_live:.2f}$ | Close {c_live:.2f}$ (Chiusura al {pos_chiusura_live:.1f}% del range odierno)"
+
                                 sma_50_daily = sum(c_daily[-50:]) / 50
                                 sma_200_daily = sum(c_daily[-200:]) / 200
                                 distanza_sma50 = abs(prezzo_attuale - sma_50_daily) / sma_50_daily
@@ -441,12 +374,10 @@ def analizza_mercati():
                                     sl_strutturale = max(h_daily[-10:]) + 0.10 
                                     tp_strutturale = minimo_mensile
                                 else:
-                                    print(f"  └─ 🛑 SCARTATO: Non a contatto con SMA50 Daily (Dist: {distanza_sma50:.1%}) o Contro Trend")
                                     continue
                             else:
                                 continue
                         except Exception as e:
-                            print(f"  └─ 🛑 Errore dati Daily: {e}")
                             continue
 
                         giorni_agli_utili = recupera_utili_sicuri(ticker, session)
@@ -467,17 +398,15 @@ def analizza_mercati():
                         sma_txt = "SOPRA SMA50" if prezzo_attuale > sma_50 else "SOTTO SMA50"
                         molt_vol = volume_attuale / media_volume
 
-                        # Passiamo anche il DIX alla AI
                         commento_ai = chiedi_analisi_ai(
                             ticker=nome, id_seg=id_seg, prezzo=prezzo_attuale, var_perc=var_perc, 
                             vol_molt=molt_vol, trend_txt=f"{sma_txt} ({trend_txt})", atr=atr_14, 
                             corpo=corpo_candela, dist_max=distanza_massimo_perc, dist_min=distanza_minimo_perc, 
                             giorni_utili=giorni_agli_utili, gex_val=gex_val, gex_regime=gex_regime, 
                             proxy_ticker=proxy_ticker, vix_ratio=vix_ratio, vix_stato=vix_stato, 
-                            dix_val=dix_val, dix_stato=dix_stato
+                            dix_val=dix_val, dix_stato=dix_stato, forma_daily=forma_daily
                         )
 
-                        # Emoji dinamica per il DIX (Gialla se neutrale)
                         dix_emoji = '🟢' if dix_val >= 45.0 else '🔴' if dix_val <= 40.0 else '🟡'
 
                         if var_perc >= 0:
@@ -486,9 +415,10 @@ def analizza_mercati():
                                f"📉 VIX TERM STR: {vix_ratio:.2f} ({'🔴' if vix_ratio > 1 else '🟢'} {vix_stato.split(' ')[0]})\n"
                                f"🐳 DARK POOL (DIX): {dix_val:.1f}% ({dix_emoji} {dix_stato.split(' ')[0]})\n"
                                f"📊 Rotazione: {SETTORI[etf_leader]['nome_settore']}\n"
-                               f"Contesto: {sma_txt} | {trend_txt}\n"
-                               f"Prezzo Chiusura: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
-                               f"Volume: {molt_vol:.1f}x media\n"
+                               f"Contesto D1: {sma_txt} | {trend_txt}\n"
+                               f"Prezzo H1: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
+                               f"Volume H1: {molt_vol:.1f}x media RVOL\n"
+                               f"Candela Daily Cumulata: Chiusura al {pos_chiusura_live:.0f}% del range odierno\n"
                                f"------------------------\n"
                                f"⏳ INGRESSO IN CONFERMA:\n"
                                f"{ordine_txt}\n"
@@ -502,9 +432,10 @@ def analizza_mercati():
                                    f"📉 VIX TERM STR: {vix_ratio:.2f} ({'🔴' if vix_ratio > 1 else '🟢'} {vix_stato.split(' ')[0]})\n"
                                    f"🐳 DARK POOL (DIX): {dix_val:.1f}% ({dix_emoji} {dix_stato.split(' ')[0]})\n"
                                    f"📊 Rotazione: {SETTORI[etf_leader]['nome_settore']}\n"
-                                   f"Contesto: {sma_txt} | {trend_txt}\n"
-                                   f"Prezzo Chiusura: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
-                                   f"Volume: {molt_vol:.1f}x media\n"
+                                   f"Contesto D1: {sma_txt} | {trend_txt}\n"
+                                   f"Prezzo H1: {prezzo_attuale:.2f} $ ({var_perc:+.2f}%)\n"
+                                   f"Volume H1: {molt_vol:.1f}x media RVOL\n"
+                                   f"Candela Daily Cumulata: Chiusura al {pos_chiusura_live:.0f}% del range odierno\n"
                                    f"------------------------\n"
                                    f"⚠️ BLOCCO OPERATIVO (NO LEVA):\n"
                                    f"Questo è un setup Ribassista (Short verso {tp:.2f}$). "
