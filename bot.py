@@ -218,31 +218,29 @@ def recupera_gex_settoriale(etf_leader):
                 if cache.get("data") == oggi_str and cache.get("ticker") == proxy_ticker:
                     print(f"✅ GEX Proxy ({proxy_ticker}) recuperato da cache.")
                     return cache.get("gex_value"), cache.get("gex_regime"), proxy_ticker
-        except Exception:
-            pass
+        except Exception: pass
 
-    print(f"🔄 Richiesta GEX {proxy_ticker} (Scadenza: {scadenza_opzioni}) a FlashAlpha...")
+    # RIPRISTINATO: Print di debug chiamata FlashAlpha
+    print(f"🔄 Richiesta FlashAlpha per {proxy_ticker}...")
     url_flashalpha = f"https://lab.flashalpha.com/v1/exposure/gex/{proxy_ticker}?expiration={scadenza_opzioni}"
     headers = {"X-Api-Key": FLASHALPHA_API_KEY.strip(), "User-Agent": "Mozilla/5.0"}
     
     try:
         response = requests.get(url_flashalpha, headers=headers, timeout=10)
+        # RIPRISTINATO: Debug risposta server
+        print(f"📡 Risposta FlashAlpha [{response.status_code}]: {response.text[:100]}")
         response.raise_for_status()
         dati = response.json()
         
         gex_value = dati.get("net_gex", 0) 
-        gex_regime = "POSITIVO (Stabilità/Mean Reversion)" if gex_value > 0 else "NEGATIVO (Alta Volatilità/Trend Esteso)"
+        gex_regime = "POSITIVO (Stabilità)" if gex_value > 0 else "NEGATIVO (Volatilità)"
         
         with open(cache_file, "w") as f:
             json.dump({"data": oggi_str, "ticker": proxy_ticker, "gex_value": gex_value, "gex_regime": gex_regime}, f)
             
         return gex_value, gex_regime, proxy_ticker
-        
-    except Exception:
-        if os.path.exists(cache_file):
-            with open(cache_file, "r") as f:
-                old_cache = json.load(f)
-                return old_cache.get("gex_value", 0), old_cache.get("gex_regime", "SCONOSCIUTO"), old_cache.get("ticker", proxy_ticker)
+    except Exception as e:
+        print(f"❌ Errore API GEX {proxy_ticker}: {e}")
         return 0, "SCONOSCIUTO", proxy_ticker
 
 def analizza_mercati():
@@ -263,10 +261,12 @@ def analizza_mercati():
 
     for etf_leader, perf_leader in top_settori:
         gex_val, gex_regime, proxy_ticker = recupera_gex_settoriale(etf_leader)
+        print(f"\n🚀 Analisi Settore: {etf_leader} | Proxy: {proxy_ticker}")
         tickers_da_analizzare = SETTORI[etf_leader]["tickers"]
         
         for nome, ticker in tickers_da_analizzare.items():
             try:
+                print(f"🔎 Analizzando {nome} ({ticker})...")
                 url = f"https://query2.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1h&range=1mo"
                 response = session.get(url, timeout=10)
                 if response.status_code != 200: continue
