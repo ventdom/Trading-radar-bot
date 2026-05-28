@@ -319,11 +319,9 @@ def analizza_mercati():
                 distanza_massimo_perc = ((massimo_mensile - prezzo_attuale) / prezzo_attuale) * 100
                 distanza_minimo_perc = ((prezzo_attuale - minimo_mensile) / prezzo_attuale) * 100
 
-                ora_utc = datetime.utcnow().hour
-                offset_apertura = 0.5 if ora_utc in [14, 15] else 0.0
-                soglia_breakout = 1.3 + offset_apertura
-                soglia_spinta = 1.8 + offset_apertura
-                soglia_assorbimento = 2.2 + offset_apertura
+                soglia_breakout = 1.3
+                soglia_spinta = 1.8
+                soglia_assorbimento = 2.2
 
                 if media_volume > 0 and volume_attuale >= (media_volume * soglia_breakout):
                     id_seg_temp = None
