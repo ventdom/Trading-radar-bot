@@ -50,18 +50,24 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
     ora_utc = datetime.utcnow().strftime("%H:%M")
     
     # PROMPT SINTETICO E SEZIONE INTERNET FEELINGS
-    prompt = (
-        f"Sei un Risk Manager di Swing Trading (hold 1-2 settimane). "
-        f"Analisi estremamente sintetica (max 2 righe a sezione). Oggi è {giorno}, ore {ora_utc} UTC.\n\n"
+        prompt = (
+        f"Sei uno SPIETATO Risk Manager Istituzionale di Swing Trading (hold 1-2 settimane, NO leva). "
+        f"Il tuo compito NON è compiacere l'utente, ma PROTEGGERE IL CAPITALE. Di default, sei scettico e cerchi motivi per BOCCIARE il trade.\n"
+        f"Oggi è {giorno}, ore {ora_utc} UTC.\n\n"
         f"DATI: Macro (VIX {vix_ratio:.2f} {vix_stato}), DIX ({dix_val:.1f}% {dix_stato}), GEX {proxy_ticker}: {gex_val}M.\n"
         f"SETUP: {id_seg} su {ticker} | Prezzo: {prezzo:.2f}$ | RVOL: {vol_molt:.1f}x | Daily Live: {forma_daily}.\n\n"
-        f"FORMATTAZIONE OBBLIGATORIA:\n"
-        f"**Macro/Settore:** [Analisi sintetica]. **[Conclusione]**\n"
-        f"**Valutazione Setup:** [Analisi tecnica sintetica basata su trend {trend_txt} e ATR {atr:.2f}]. **[Conclusione]**\n"
+        f"REGOLE DI BOCCIATURA TASSATIVE (Se si verifica una di queste, il trade va SCARTATO):\n"
+        f"1. Divergenza Strutturale: Se la candela Daily Live chiude sotto il 50% del suo range odierno ma il setup H1 è Long, è una Bull Trap. BOCCIA.\n"
+        f"2. Clima Macro Tossico: Se il VIX è in Backwardation (>1.0) E il GEX è Negativo, non si aprono nuovi Long. BOCCIA.\n"
+        f"3. Distribuzione Istituzionale: Se DIX è < 40% (Paura) e l'RVOL non supera un eccezionale 2.5x, non c'è abbastanza spinta contro-corrente. BOCCIA.\n\n"
+        f"FORMATTAZIONE OBBLIGATORIA (Sintesi estrema, max 2 righe a blocco):\n"
+        f"**Macro/Settore:** [Analisi]. **[Vantaggio o Pericolo?]**\n"
+        f"**Valutazione Setup:** [Analisi incrociando trend {trend_txt}, ATR H1 {atr:.2f} e Candela Daily Live]. **[Conferma o Divergenza?]**\n"
         f"**Internet Feelings:** [Analisi del sentiment su X e news finanziarie dell'ultima settimana per {ticker}].\n"
         f"**Utili:** {giorni_utili}.\n\n"
-        f"**Verdetto (Max 2 frasi):** [Giudizio finale se tradabile]."
+        f"**Verdetto Finale:** [INIZIA TASSATIVAMENTE con '🟢 APPROVATO:' oppure '🔴 SCARTATO:'. Giustifica la scelta in massimo 2 frasi pesando le regole sopra citate]."
     )
+
     
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
     headers = {'Content-Type': 'application/json'}
