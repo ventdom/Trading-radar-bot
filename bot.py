@@ -50,7 +50,7 @@ def chiedi_analisi_ai(ticker, id_seg, prezzo, var_perc, vol_molt, trend_txt, atr
     ora_utc = datetime.utcnow().strftime("%H:%M")
     
     # PROMPT SINTETICO E SEZIONE INTERNET FEELINGS
-        prompt = (
+    prompt = (
         f"Sei uno SPIETATO Risk Manager Istituzionale di Swing Trading (hold 1-2 settimane, NO leva). "
         f"Il tuo compito NON è compiacere l'utente, ma PROTEGGERE IL CAPITALE. Di default, sei scettico e cerchi motivi per BOCCIARE il trade.\n"
         f"Oggi è {giorno}, ore {ora_utc} UTC.\n\n"
