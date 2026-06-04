@@ -206,7 +206,7 @@ def recupera_dix(session):
 
 def recupera_gex_settoriale(etf_leader):
     proxy_ticker = PROXY_SETTORI.get(etf_leader, "AAPL")
-    cache_file = f"gex_cache_{proxy_ticker}.json"
+    cache_file = "gex_cache.json"  # Nome file STATICO, combacia perfettamente con radar.yml
     
     oggi = datetime.utcnow()
     oggi_str = oggi.strftime("%Y-%m-%d")
@@ -218,23 +218,29 @@ def recupera_gex_settoriale(etf_leader):
     prossimo_venerdi = oggi + timedelta(days=giorni_al_venerdi)
     scadenza_opzioni = prossimo_venerdi.strftime("%Y-%m-%d")
     
+    cache_data = {}
+    
+    # 1. Carica l'intero dizionario di cache se il file esiste
     if os.path.exists(cache_file):
         try:
             with open(cache_file, "r") as f:
-                cache = json.load(f)
-                if cache.get("data") == oggi_str and cache.get("ticker") == proxy_ticker:
+                cache_data = json.load(f)
+                
+            # 2. Controlla se abbiamo già i dati validi per OGGI per questo specifico ticker
+            if proxy_ticker in cache_data:
+                dati_ticker = cache_data[proxy_ticker]
+                if dati_ticker.get("data") == oggi_str:
                     print(f"✅ GEX Proxy ({proxy_ticker}) recuperato da cache.")
-                    return cache.get("gex_value"), cache.get("gex_regime"), proxy_ticker
-        except Exception: pass
+                    return dati_ticker.get("gex_value"), dati_ticker.get("gex_regime"), proxy_ticker
+        except Exception as e:
+            print(f"⚠️ Errore lettura cache: {e}")
 
-    # RIPRISTINATO: Print di debug chiamata FlashAlpha
     print(f"🔄 Richiesta FlashAlpha per {proxy_ticker}...")
     url_flashalpha = f"https://lab.flashalpha.com/v1/exposure/gex/{proxy_ticker}?expiration={scadenza_opzioni}"
     headers = {"X-Api-Key": FLASHALPHA_API_KEY.strip(), "User-Agent": "Mozilla/5.0"}
     
     try:
         response = requests.get(url_flashalpha, headers=headers, timeout=10)
-        # RIPRISTINATO: Debug risposta server
         print(f"📡 Risposta FlashAlpha [{response.status_code}]: {response.text[:100]}")
         response.raise_for_status()
         dati = response.json()
@@ -242,10 +248,18 @@ def recupera_gex_settoriale(etf_leader):
         gex_value = dati.get("net_gex", 0) 
         gex_regime = "POSITIVO (Stabilità)" if gex_value > 0 else "NEGATIVO (Volatilità)"
         
+        # 3. Aggiorna SOLO la chiave del ticker corrente nel dizionario e salva
+        cache_data[proxy_ticker] = {
+            "data": oggi_str,
+            "gex_value": gex_value,
+            "gex_regime": gex_regime
+        }
+        
         with open(cache_file, "w") as f:
-            json.dump({"data": oggi_str, "ticker": proxy_ticker, "gex_value": gex_value, "gex_regime": gex_regime}, f)
+            json.dump(cache_data, f, indent=4)
             
         return gex_value, gex_regime, proxy_ticker
+        
     except Exception as e:
         print(f"❌ Errore API GEX {proxy_ticker}: {e}")
         return 0, "SCONOSCIUTO", proxy_ticker
