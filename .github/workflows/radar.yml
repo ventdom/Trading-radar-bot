@@ -8,6 +8,10 @@ on:
 jobs:
   esegui-bot:
     runs-on: ubuntu-latest
+     # --- AGGIUNGI QUESTE DUE RIGHE ---
+    permissions:
+      contents: write
+    # ---------------------------------
     steps:
       - name: Prendi il codice
         uses: actions/checkout@v4
