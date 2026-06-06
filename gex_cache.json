@@ -1,1 +1,21 @@
-{"data": "2026-05-26", "ticker": "NVDA", "gex_value": 58542388.69703838, "gex_regime": "POSITIVO (Stabilit\u00e0/Mean Reversion)"}
+{
+    "data": "2026-05-26",
+    "ticker": "NVDA",
+    "gex_value": 58542388.69703838,
+    "gex_regime": "POSITIVO (Stabilit\u00e0/Mean Reversion)",
+    "LMT": {
+        "data": "2026-06-06",
+        "gex_value": 1276933.2147129436,
+        "gex_regime": "POSITIVO (Stabilit\u00e0)"
+    },
+    "JPM": {
+        "data": "2026-06-06",
+        "gex_value": 20918304.190551065,
+        "gex_regime": "POSITIVO (Stabilit\u00e0)"
+    },
+    "AAPL": {
+        "data": "2026-06-06",
+        "gex_value": 103029428.5013528,
+        "gex_regime": "POSITIVO (Stabilit\u00e0)"
+    }
+}
