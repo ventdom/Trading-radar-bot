@@ -17,5 +17,10 @@
         "data": "2026-06-08",
         "gex_value": 91482500.14430891,
         "gex_regime": "POSITIVO (Stabilit\u00e0)"
+    },
+    "NVDA": {
+        "data": "2026-06-08",
+        "gex_value": -91934803.11823027,
+        "gex_regime": "NEGATIVO (Volatilit\u00e0)"
     }
 }
