@@ -4,9 +4,9 @@
     "gex_value": 58542388.69703838,
     "gex_regime": "POSITIVO (Stabilit\u00e0/Mean Reversion)",
     "LMT": {
-        "data": "2026-06-08",
-        "gex_value": 3840989.081367554,
-        "gex_regime": "POSITIVO (Stabilit\u00e0)"
+        "data": "2026-06-09",
+        "gex_value": -18892521.447826833,
+        "gex_regime": "NEGATIVO (Volatilit\u00e0)"
     },
     "JPM": {
         "data": "2026-06-08",
@@ -14,13 +14,13 @@
         "gex_regime": "POSITIVO (Stabilit\u00e0)"
     },
     "AAPL": {
-        "data": "2026-06-08",
-        "gex_value": 91482500.14430891,
+        "data": "2026-06-09",
+        "gex_value": 1796187.418771239,
         "gex_regime": "POSITIVO (Stabilit\u00e0)"
     },
     "NVDA": {
-        "data": "2026-06-08",
-        "gex_value": -91934803.11823027,
+        "data": "2026-06-09",
+        "gex_value": -115633563.49270435,
         "gex_regime": "NEGATIVO (Volatilit\u00e0)"
     }
 }
