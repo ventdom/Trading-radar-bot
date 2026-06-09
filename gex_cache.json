@@ -22,5 +22,10 @@
         "data": "2026-06-09",
         "gex_value": -115633563.49270435,
         "gex_regime": "NEGATIVO (Volatilit\u00e0)"
+    },
+    "XOM": {
+        "data": "2026-06-09",
+        "gex_value": -1284994.0981489213,
+        "gex_regime": "NEGATIVO (Volatilit\u00e0)"
     }
 }
