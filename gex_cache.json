@@ -24,13 +24,13 @@
         "gex_regime": "POSITIVO (Stabilit\u00e0)"
     },
     "XOM": {
-        "data": "2026-09-01",
-        "gex_value": 18170887.654774833,
+        "data": "2026-09-02",
+        "gex_value": 21788862.35747214,
         "gex_regime": "POSITIVO (Stabilit\u00e0)"
     },
     "LLY": {
-        "data": "2026-09-01",
-        "gex_value": -16547223.77167518,
+        "data": "2026-09-02",
+        "gex_value": -10727995.082932906,
         "gex_regime": "NEGATIVO (Volatilit\u00e0)"
     }
 }
