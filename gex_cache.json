@@ -14,13 +14,13 @@
         "gex_regime": "POSITIVO (Stabilit\u00e0)"
     },
     "AAPL": {
-        "data": "2026-09-26",
-        "gex_value": 107141841.22202456,
+        "data": "2026-09-27",
+        "gex_value": 65323980.50774729,
         "gex_regime": "POSITIVO (Stabilit\u00e0)"
     },
     "NVDA": {
-        "data": "2026-09-26",
-        "gex_value": 63518780.4348848,
+        "data": "2026-09-27",
+        "gex_value": 250229426.28005803,
         "gex_regime": "POSITIVO (Stabilit\u00e0)"
     },
     "XOM": {
@@ -29,8 +29,8 @@
         "gex_regime": "POSITIVO (Stabilit\u00e0)"
     },
     "LLY": {
-        "data": "2026-09-26",
-        "gex_value": 6955438.6953936415,
-        "gex_regime": "POSITIVO (Stabilit\u00e0)"
+        "data": "2026-09-27",
+        "gex_value": -9475103.248591851,
+        "gex_regime": "NEGATIVO (Volatilit\u00e0)"
     }
 }
