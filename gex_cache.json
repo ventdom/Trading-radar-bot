@@ -4,13 +4,13 @@
     "gex_value": 58542388.69703838,
     "gex_regime": "POSITIVO (Stabilit\u00e0/Mean Reversion)",
     "LMT": {
-        "data": "2026-10-14",
-        "gex_value": 311485.7284417389,
+        "data": "2026-10-15",
+        "gex_value": 9367598.029233435,
         "gex_regime": "POSITIVO (Stabilit\u00e0)"
     },
     "JPM": {
-        "data": "2026-10-14",
-        "gex_value": 22867659.18856785,
+        "data": "2026-10-15",
+        "gex_value": 36951893.63643237,
         "gex_regime": "POSITIVO (Stabilit\u00e0)"
     },
     "AAPL": {
@@ -24,8 +24,8 @@
         "gex_regime": "POSITIVO (Stabilit\u00e0)"
     },
     "XOM": {
-        "data": "2026-10-14",
-        "gex_value": 60482366.34814096,
+        "data": "2026-10-15",
+        "gex_value": 136597302.21492296,
         "gex_regime": "POSITIVO (Stabilit\u00e0)"
     },
     "LLY": {
